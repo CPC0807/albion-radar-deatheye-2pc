@@ -57,6 +57,11 @@ namespace X975.Radar.GameObjects.Players
                     playersList.TryRemove(id, out Player p);
 
                 playersList.TryAdd(id, new Player(id, name, guild, alliance, position, health, faction, LoadEquipment(equipments), spells));
+
+                // Debug: 輸出新玩家加入信息（可以在測試後移除）
+                #if DEBUG
+                Console.WriteLine($"[PlayerAdd] ID:{id} Name:{name} Guild:{guild} Pos:({position.X:F2},{position.Y:F2}) Faction:{faction}");
+                #endif
             }
         }
 
@@ -153,17 +158,24 @@ namespace X975.Radar.GameObjects.Players
         {
             lock (playersList)
             {
-                Vector2 position = Vector2.Zero;
-                Vector2 newPosition = Vector2.Zero;
-                
+                #if DEBUG
                 if (XorCode != null)
                 {
-                    var pos = Decrypt(positionBytes);
-                    position = new Vector2(pos[1], pos[0]);
-                    var newPos = Decrypt(newPositionBytes);
-                    newPosition = new Vector2(newPos[1], newPos[0]);
+                    Console.WriteLine($"[XorCode] Present, Length:{XorCode.Length} First4Bytes:{BitConverter.ToString(XorCode, 0, Math.Min(4, XorCode.Length))}");
                 }
-                
+                else
+                {
+                    Console.WriteLine($"[XorCode] NULL - Cannot decrypt!");
+                }
+                #endif
+
+                // MoveEvent座標需要解密
+                var pos = Decrypt(positionBytes);
+                Vector2 position = new Vector2(pos[1], pos[0]);
+
+                var newPos = Decrypt(newPositionBytes);
+                Vector2 newPosition = new Vector2(newPos[1], newPos[0]);
+
                 if (playersList.TryGetValue(id, out Player player))
                 {
                     player.IsStanding = (player.Position - position).Magnitude() <= 0.05;
@@ -171,6 +183,11 @@ namespace X975.Radar.GameObjects.Players
                     player.Speed = speed;
                     player.Time = time;
                     player.NewPosition = newPosition;
+
+                    // Debug: 輸出玩家位置更新信息（可以在測試後移除）
+                    #if DEBUG
+                    Console.WriteLine($"[PlayerPos] ID:{id} Name:{player.Name} Pos:({position.X:F2},{position.Y:F2}) NewPos:({newPosition.X:F2},{newPosition.Y:F2}) Speed:{speed:F2}");
+                    #endif
                 }
             }
         }

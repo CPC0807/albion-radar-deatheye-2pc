@@ -38,6 +38,7 @@ namespace X975.Radar
         private readonly Thread globalTimer, radarOverlay, itemsOverlay, infoOverlay;
 
         private IPhotonReceiver photonReceiver;
+        private NetworkConfig networkConfig;
 
         public static PacketIndexes PacketIndexes;
         public static PacketOffsets PacketOffsets;
@@ -50,7 +51,10 @@ namespace X975.Radar
                                         "\n" +
                                         "Make sure that ITEMS folder is in the same directory as the executable and contains images of items.");
             }
-            
+
+            // Load network configuration
+            networkConfig = NetworkConfig.Load();
+
             PacketIndexes = Diagnostics.DoVital(() => ReadJson<PacketIndexes>("jsons/indexes.json"),
                 "Can't load json/indexes.json");
             PacketOffsets = Diagnostics.DoVital(() => ReadJson<PacketOffsets>("jsons/offsets.json"),
@@ -127,7 +131,10 @@ namespace X975.Radar
 
             #region THREADS
 
-            packetSniffer = new PacketDeviceSelector(photonReceiver);
+            // Initialize packet capture with configurable game port
+            Console.WriteLine($"[Init] Starting packet capture on game port {networkConfig.GamePort}");
+            Console.WriteLine("[Init] No Cryptonite needed! No hosts file modification needed!");
+            packetSniffer = new PacketDeviceSelector(photonReceiver, networkConfig.GamePort);
 
             globalTimer = new Thread(() => new GlobalTimer(localPlayerHandler, playersHandler, mobsHandler).Start());
 
@@ -170,7 +177,9 @@ namespace X975.Radar
 
         public void Start()
         {
+            // Start packet capture
             packetSniffer.Start();
+
             globalTimer.Start();
             radarOverlay.Start();
             itemsOverlay.Start();

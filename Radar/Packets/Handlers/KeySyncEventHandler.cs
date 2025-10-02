@@ -16,6 +16,18 @@ namespace X975.Radar.Packets.Handlers
         protected override Task OnActionAsync(KeySyncEvent value)
         {
             playersHandler.XorCode = value.Code;
+
+            #if DEBUG
+            if (value.Code != null)
+            {
+                System.Console.WriteLine($"[KeySync] XorCode received! Length:{value.Code.Length} Bytes:{System.BitConverter.ToString(value.Code)}");
+            }
+            else
+            {
+                System.Console.WriteLine($"[KeySync] XorCode is NULL!");
+            }
+            #endif
+
             return Task.CompletedTask;
         }
     }

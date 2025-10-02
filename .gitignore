@@ -37,4 +37,7 @@ msbuild.wrn
 .vs/
 .idea/
 
+# Albion data dumps
+ao-bin-dumps/
+
 ITEMS/**/*.png

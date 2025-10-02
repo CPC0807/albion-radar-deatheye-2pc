@@ -14,10 +14,12 @@ namespace X975.Radar.Sniffer
     public class PacketDeviceSelector
     {
         private readonly IPhotonReceiver photonReceiver;
+        private readonly int gamePort;
 
-        public PacketDeviceSelector(IPhotonReceiver photonReceiver)
+        public PacketDeviceSelector(IPhotonReceiver photonReceiver, int gamePort = 5050)
         {
             this.photonReceiver = photonReceiver;
+            this.gamePort = gamePort;
         }
 
         public void Start()
@@ -75,7 +77,7 @@ namespace X975.Radar.Sniffer
                     ReadTimeout = 5
                 });
 
-                device.Filter = "udp and port 5050";
+                device.Filter = $"udp and port {gamePort}";
                 device.OnPacketArrival += Device_OnPacketArrival;
                 device.StartCapture();
             }
