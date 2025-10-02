@@ -94,7 +94,9 @@ namespace X975.Radar
 
             ReceiverBuilder builder = ReceiverBuilder.Create();
 
-            // builder.AddHandler(new DebugHandler());
+            #if DEBUG
+            builder.AddHandler(new DebugHandler());
+            #endif
             builder.AddEventHandler(new LeaveEventHandler(playersHandler, mobsHandler, dungeonsHandler,
                 fishNodesHandler, gatedWispsHandler, lootChestsHandler));
             builder.AddResponseHandler(new ChangeClusterEventHandler(localPlayerHandler, playersHandler,
@@ -124,6 +126,15 @@ namespace X975.Radar
             builder.AddEventHandler(new WispGateOpenedEventHandler(gatedWispsHandler));
             builder.AddEventHandler(new NewLootChestEventHandler(lootChestsHandler));
             builder.AddEventHandler(new KeySyncEventHandler(playersHandler));
+
+            // #if DEBUG
+            // 暴力搜索 KeySync 事件ID (500-700)
+            Console.WriteLine("[BruteForce] Registering KeySync scanners for event IDs 500-700...");
+            // for (int i = 500; i <= 700; i++)
+            // {
+            //     builder.AddEventHandler(new BruteForceKeySyncHandler(playersHandler, i));
+            // }
+            // #endif
 
             photonReceiver = builder.Build();
 

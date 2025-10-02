@@ -158,23 +158,9 @@ namespace X975.Radar.GameObjects.Players
         {
             lock (playersList)
             {
-                #if DEBUG
-                if (XorCode != null)
-                {
-                    Console.WriteLine($"[XorCode] Present, Length:{XorCode.Length} First4Bytes:{BitConverter.ToString(XorCode, 0, Math.Min(4, XorCode.Length))}");
-                }
-                else
-                {
-                    Console.WriteLine($"[XorCode] NULL - Cannot decrypt!");
-                }
-                #endif
-
-                // MoveEvent座標需要解密
-                var pos = Decrypt(positionBytes);
-                Vector2 position = new Vector2(pos[1], pos[0]);
-
-                var newPos = Decrypt(newPositionBytes);
-                Vector2 newPosition = new Vector2(newPos[1], newPos[0]);
+                // 測試：Albion可能不再加密座標，直接解析試試
+                Vector2 position = new Vector2(BitConverter.ToSingle(positionBytes, 4), BitConverter.ToSingle(positionBytes, 0));
+                Vector2 newPosition = new Vector2(BitConverter.ToSingle(newPositionBytes, 4), BitConverter.ToSingle(newPositionBytes, 0));
 
                 if (playersList.TryGetValue(id, out Player player))
                 {
