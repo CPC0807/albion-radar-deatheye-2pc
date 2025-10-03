@@ -253,6 +253,7 @@
     <Compile Include="Radar\GameObjects\Players\Health.cs" />
     <Compile Include="Radar\GameObjects\Players\Player.cs" />
     <Compile Include="Radar\GameObjects\Players\PlayersHandler.cs" />
+    <Compile Include="Radar\GameObjects\Players\XorCodeBruteForce.cs" />
     <Compile Include="Radar\GlobalTimer.cs" />
     <Compile Include="Radar\Init.cs" />
     <Compile Include="Radar\Packets\Handlers\ChangeClusterEvent.cs" />

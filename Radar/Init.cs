@@ -129,7 +129,7 @@ namespace X975.Radar
 
             // #if DEBUG
             // 暴力搜索 KeySync 事件ID (500-700)
-            Console.WriteLine("[BruteForce] Registering KeySync scanners for event IDs 500-700...");
+            // Console.WriteLine("[BruteForce] Registering KeySync scanners for event IDs 500-700...");
             // for (int i = 500; i <= 700; i++)
             // {
             //     builder.AddEventHandler(new BruteForceKeySyncHandler(playersHandler, i));

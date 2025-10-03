@@ -77,7 +77,8 @@ namespace X975.Radar.Sniffer
                     ReadTimeout = 5
                 });
 
-                device.Filter = $"udp and port {gamePort}";
+                // 監聽多個端口：主端口 + 5055 + 4535
+                device.Filter = $"udp and (port {gamePort} or port 5055 or port 4535)";
                 device.OnPacketArrival += Device_OnPacketArrival;
                 device.StartCapture();
             }

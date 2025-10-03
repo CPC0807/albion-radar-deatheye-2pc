@@ -24,6 +24,34 @@ namespace X975.Radar.Packets.Handlers
             PositionBytes = new byte[8];
             Array.Copy(parameter, index, PositionBytes, 0, 8);
 
+            #if DEBUG
+            // Debug: 輸出原始位置 bytes 和測試不同的 index
+            Console.WriteLine($"[MoveEvent] ID:{Id} ParamLen:{parameter.Length} Index:{index}");
+            Console.WriteLine($"  Current (index={index}): {BitConverter.ToString(PositionBytes)}");
+
+            // 測試其他可能的 index 值
+            for (int testIdx = 1; testIdx < parameter.Length - 8 && testIdx <= 20; testIdx += 4)
+            {
+                if (testIdx + 8 <= parameter.Length)
+                {
+                    byte[] testBytes = new byte[8];
+                    Array.Copy(parameter, testIdx, testBytes, 0, 8);
+
+                    float testX = BitConverter.ToSingle(testBytes, 0);
+                    float testY = BitConverter.ToSingle(testBytes, 4);
+
+                    // 如果座標看起來合理
+                    if (!float.IsNaN(testX) && !float.IsNaN(testY) &&
+                        !float.IsInfinity(testX) && !float.IsInfinity(testY) &&
+                        Math.Abs(testX) < 5000 && Math.Abs(testY) < 5000 &&
+                        (testX != 0 || testY != 0))
+                    {
+                        Console.WriteLine($"  [MATCH!] index={testIdx}: ({testX:F2}, {testY:F2})");
+                    }
+                }
+            }
+            #endif
+
             index *= 2;
 
             if (flags.HasFlag(Flags.Speed))
