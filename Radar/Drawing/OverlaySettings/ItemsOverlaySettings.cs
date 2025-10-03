@@ -1,10 +1,10 @@
 ﻿using GameOverlay.Drawing;
 using System.Threading.Tasks;
-using X975.Radar.Drawing;
-using X975.Radar.Drawing.Overlays;
-using X975.Settings;
+using VRise.Radar.Drawing;
+using VRise.Radar.Drawing.Overlays;
+using VRise.Settings;
 
-namespace X977.Radar.OverlaySettings
+namespace VRise.Radar.OverlaySettings
 {
     public class ItemsOverlaySettings
     {

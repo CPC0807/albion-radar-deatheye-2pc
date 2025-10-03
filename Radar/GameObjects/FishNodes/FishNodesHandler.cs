@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Collections.Concurrent;
 
-namespace X975.Radar.GameObjects.FishNodes
+namespace VRise.Radar.GameObjects.FishNodes
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class FishNodesHandler

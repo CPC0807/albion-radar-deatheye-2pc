@@ -1,9 +1,9 @@
-﻿using X975.Radar.GameObjects.LocalPlayer;
-using X975.Radar.GameObjects.Harvestables;
+﻿using VRise.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.Harvestables;
 using Albion.Network;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class MoveRequestOperationHandler : RequestPacketHandler<MoveRequestOperation>
     {

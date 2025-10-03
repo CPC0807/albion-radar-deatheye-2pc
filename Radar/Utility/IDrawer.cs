@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Utility
+namespace VRise.Radar.Utility
 {
     public interface IDrawerer
     {

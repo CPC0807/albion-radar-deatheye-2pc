@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Reflection;
 
-namespace X975.Radar.GameObjects.LootChests
+namespace VRise.Radar.GameObjects.LootChests
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class LootChest

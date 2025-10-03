@@ -1,8 +1,8 @@
 ﻿using Albion.Network;
-using X975.Radar.GameObjects.Dungeons;
+using VRise.Radar.GameObjects.Dungeons;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class NewDungeonEventHandler : EventPacketHandler<NewDungeonEvent>
     {

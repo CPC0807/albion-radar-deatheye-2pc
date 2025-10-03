@@ -1,27 +1,27 @@
 ﻿using System;
-using X975.Radar.GameObjects.GatedWisps;
-using X975.Radar.GameObjects.FishNodes;
-using X975.Radar.GameObjects.LootChests;
-using X975.Radar.GameObjects.LocalPlayer;
-using X975.Radar.GameObjects.Dungeons;
-using X975.Radar.GameObjects.Harvestables;
-using X975.Radar.GameObjects.Mobs;
-using X975.Radar.GameObjects.Players;
-using X975.Radar.Packets.Handlers;
+using VRise.Radar.GameObjects.GatedWisps;
+using VRise.Radar.GameObjects.FishNodes;
+using VRise.Radar.GameObjects.LootChests;
+using VRise.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.Dungeons;
+using VRise.Radar.GameObjects.Harvestables;
+using VRise.Radar.GameObjects.Mobs;
+using VRise.Radar.GameObjects.Players;
+using VRise.Radar.Packets.Handlers;
 using Albion.Network;
 using System.Threading;
-using X975.Radar.Sniffer;
-using X975.Radar.Drawing.Overlays;
+using VRise.Radar.Sniffer;
+using VRise.Radar.Drawing.Overlays;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
-using X975.Protocol.Connect.Messages.ResponseObj;
-using X975.Radar.Dependencies.Harvestable;
-using X975.Radar.Dependencies.Item;
-using X975.Radar.Dependencies.Mob;
-using X975.Tools;
+using VRise.Protocol.Connect.Messages.ResponseObj;
+using VRise.Radar.Dependencies.Harvestable;
+using VRise.Radar.Dependencies.Item;
+using VRise.Radar.Dependencies.Mob;
+using VRise.Tools;
 
-namespace X975.Radar
+namespace VRise.Radar
 {
     public class Init
     {
@@ -191,7 +191,7 @@ namespace X975.Radar
             // Start packet capture
             packetSniffer.Start();
 
-            globalTimer.Start();
+            // globalTimer.Start(); // 暫時停用計時器
             radarOverlay.Start();
             itemsOverlay.Start();
             infoOverlay.Start();

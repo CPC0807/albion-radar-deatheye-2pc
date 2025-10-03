@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace X975.Radar.OverlaySettings
+namespace VRise.Radar.OverlaySettings
 {
     public class InfoOverlayBrushesDictionary
     {

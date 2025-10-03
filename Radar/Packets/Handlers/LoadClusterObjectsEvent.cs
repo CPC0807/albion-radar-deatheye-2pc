@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System;
-using X975.Radar.GameObjects.LocalPlayer;
-using X975.Radar.Utility;
+using VRise.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.Utility;
 using System.Linq;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class LoadClusterObjectsEvent : BaseEvent
     {

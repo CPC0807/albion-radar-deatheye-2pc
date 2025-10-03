@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Collections.Concurrent;
 
-namespace X975.Radar.GameObjects.Dungeons
+namespace VRise.Radar.GameObjects.Dungeons
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class DungeonsHandler

@@ -1,11 +1,11 @@
 ﻿using System.Numerics;
 using System.Collections.Generic;
-using X975.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.LocalPlayer;
 using System.Reflection;
-using X975.Radar.Utility;
+using VRise.Radar.Utility;
 using System.Collections.Concurrent;
 
-namespace X975.Radar.GameObjects.Harvestables
+namespace VRise.Radar.GameObjects.Harvestables
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class HarvestablesHandler

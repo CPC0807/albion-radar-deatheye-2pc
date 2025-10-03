@@ -1,9 +1,9 @@
-﻿using X975.Settings;
+﻿using VRise.Settings;
 using GameOverlay.Drawing;
 using System.Threading.Tasks;
-using X975.Radar.Drawing.Overlays;
+using VRise.Radar.Drawing.Overlays;
 
-namespace X975.Radar.Drawing.OverlaySettings
+namespace VRise.Radar.Drawing.OverlaySettings
 {
     public class RadarOverlaySettings
     {

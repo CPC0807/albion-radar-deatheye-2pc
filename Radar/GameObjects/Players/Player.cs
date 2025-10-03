@@ -1,11 +1,11 @@
-﻿using X975.Radar.Utility;
+﻿using VRise.Radar.Utility;
 using System.Numerics;
 using System;
 using System.Collections.Generic;
-using X975.Protocol.Connect.Messages.ResponseObj;
+using VRise.Protocol.Connect.Messages.ResponseObj;
 using System.Reflection;
 
-namespace X975.Radar.GameObjects.Players
+namespace VRise.Radar.GameObjects.Players
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class Player

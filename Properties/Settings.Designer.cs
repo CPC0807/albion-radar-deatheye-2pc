@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace X975.Properties {
+namespace VRise.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

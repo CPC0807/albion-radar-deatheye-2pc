@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Reflection;
 
-namespace X975.Radar.GameObjects.FishNodes
+namespace VRise.Radar.GameObjects.FishNodes
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class FishNode

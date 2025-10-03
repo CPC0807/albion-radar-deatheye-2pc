@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class BruteForceKeySyncEvent : BaseEvent
     {

@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace X975.Radar.Utility
+namespace VRise.Radar.Utility
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public static class Additions

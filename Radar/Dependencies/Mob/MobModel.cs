@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
-using X975.Protocol.Connect.Messages.ResponseObj;
-using X975.Radar.Dependencies.Harvestable;
+using VRise.Protocol.Connect.Messages.ResponseObj;
+using VRise.Radar.Dependencies.Harvestable;
 
-namespace X975.Radar.Dependencies.Mob
+namespace VRise.Radar.Dependencies.Mob
 {
     [XmlRoot(ElementName = "Loot")]
     public class LootMetaData

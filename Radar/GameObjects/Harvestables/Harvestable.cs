@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Reflection;
 
-namespace X975.Radar.GameObjects.Harvestables
+namespace VRise.Radar.GameObjects.Harvestables
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class Harvestable

@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace X975.Pages
+namespace VRise.Pages
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public partial class SupportPage : Page

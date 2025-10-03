@@ -1,14 +1,14 @@
 ﻿using System.Numerics;
 using System;
 using System.Collections.Generic;
-using X975.Radar.Utility;
-using X975.Radar.GameObjects.Players;
-using X975.Protocol.Connect.Messages.ResponseObj;
+using VRise.Radar.Utility;
+using VRise.Radar.GameObjects.Players;
+using VRise.Protocol.Connect.Messages.ResponseObj;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Concurrent;
 
-namespace X975.Radar.GameObjects.Mobs
+namespace VRise.Radar.GameObjects.Mobs
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class MobsHandler

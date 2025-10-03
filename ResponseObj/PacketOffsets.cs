@@ -1,4 +1,4 @@
-﻿namespace X975.Protocol.Connect.Messages.ResponseObj
+﻿namespace VRise.Protocol.Connect.Messages.ResponseObj
 {
     public class PacketOffsets
     {

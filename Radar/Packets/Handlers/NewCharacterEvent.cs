@@ -1,12 +1,12 @@
 ﻿using Albion.Network;
-using X975.Radar.GameObjects.Players;
-using X975.Radar.Utility;
+using VRise.Radar.GameObjects.Players;
+using VRise.Radar.Utility;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class NewCharacterEvent : BaseEvent

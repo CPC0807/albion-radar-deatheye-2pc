@@ -1,17 +1,17 @@
-﻿using X975.Radar.Drawers;
-using X975.Radar.Utility;
-using X975.Radar.GameObjects.Mobs;
-using X975.Radar.GameObjects.Players;
-using X975.Radar.GameObjects.Dungeons;
-using X975.Radar.GameObjects.GatedWisps;
-using X975.Radar.GameObjects.Harvestables;
-using X975.Radar.GameObjects.FishNodes;
-using X975.Radar.GameObjects.LootChests;
-using X975.Radar.GameObjects.LocalPlayer;
+﻿using VRise.Radar.Drawers;
+using VRise.Radar.Utility;
+using VRise.Radar.GameObjects.Mobs;
+using VRise.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.Dungeons;
+using VRise.Radar.GameObjects.GatedWisps;
+using VRise.Radar.GameObjects.Harvestables;
+using VRise.Radar.GameObjects.FishNodes;
+using VRise.Radar.GameObjects.LootChests;
+using VRise.Radar.GameObjects.LocalPlayer;
 using System.Threading.Tasks;
-using X975.Radar.Drawing.OverlaySettings;
+using VRise.Radar.Drawing.OverlaySettings;
 
-namespace X975.Radar.Drawing.Overlays
+namespace VRise.Radar.Drawing.Overlays
 {
     public class RadarOverlay : Overlay
     {

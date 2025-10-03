@@ -1,4 +1,4 @@
-﻿<Application x:Class="X975.App"
+﻿<Application x:Class="VRise.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
@@ -11,24 +11,79 @@
                 <ResourceDictionary Source="Design/Lang/lang.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <SolidColorBrush x:Key="MainColor" Color="#FF121212"/>
-            <SolidColorBrush x:Key="ThirdColor" Color="#FF74C71F"/>
-            <SolidColorBrush x:Key="BorderColor" Color="#FF3E3E3E"/>
+            <!-- 更新配色方案 -->
+            <SolidColorBrush x:Key="MainColor" Color="#FF0A0E27"/>
+            <SolidColorBrush x:Key="SecondaryColor" Color="#FF1A1F3A"/>
+            <SolidColorBrush x:Key="ThirdColor" Color="#FF00D9FF"/>
+            <SolidColorBrush x:Key="AccentColor" Color="#FFFF6B35"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#FF2A3F5F"/>
+            <SolidColorBrush x:Key="HoverColor" Color="#FF273456"/>
+
+            <!-- Logo 向量圖形資源 - VRise V字形 -->
+            <DrawingImage x:Key="VRiseLogo">
+                <DrawingImage.Drawing>
+                    <DrawingGroup>
+                        <!-- V字外框 -->
+                        <GeometryDrawing Brush="{StaticResource ThirdColor}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry>
+                                    <PathFigure StartPoint="2,2" IsClosed="True">
+                                        <LineSegment Point="8,2"/>
+                                        <LineSegment Point="16,26"/>
+                                        <LineSegment Point="24,2"/>
+                                        <LineSegment Point="30,2"/>
+                                        <LineSegment Point="18,30"/>
+                                        <LineSegment Point="14,30"/>
+                                    </PathFigure>
+                                </PathGeometry>
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                        <!-- V字內部陰影 -->
+                        <GeometryDrawing Brush="{StaticResource AccentColor}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry>
+                                    <PathFigure StartPoint="16,22" IsClosed="True">
+                                        <LineSegment Point="22,8"/>
+                                        <LineSegment Point="25,8"/>
+                                        <LineSegment Point="16,28"/>
+                                    </PathFigure>
+                                </PathGeometry>
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                </DrawingImage.Drawing>
+            </DrawingImage>
 
             <Style TargetType="{x:Type TextBlock}">
                 <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontFamily" Value="/X975;component/Design/Font/#Nokia Sans S60"/>
+                <Setter Property="FontFamily" Value="/VRise;component/Design/Font/#Nokia Sans S60"/>
             </Style>
 
             <Style TargetType="{x:Type Button}" x:Key="MenyBtn">
                 <Setter Property="Focusable" Value="False" />
                 <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
-                            <Border Background="{TemplateBinding Background}" BorderBrush="{x:Null}" BorderThickness="0" CornerRadius="3">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{StaticResource ThirdColor}"
+                                    BorderThickness="0 0 0 0"
+                                    CornerRadius="6"
+                                    Padding="2">
                                 <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource HoverColor}"/>
+                                    <Setter TargetName="border" Property="BorderThickness" Value="0 0 3 0"/>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Background}" Value="{StaticResource HoverColor}">
+                                    <Setter TargetName="border" Property="BorderThickness" Value="0 0 3 0"/>
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>

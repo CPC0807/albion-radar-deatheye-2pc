@@ -4,12 +4,21 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 
-[assembly: AssemblyDescription("t3bvhdOm0jhi2YO")]
-[assembly: AssemblyConfiguration("woFnLvlyJmLJ5WZ")]
-[assembly: AssemblyCompany("9WbXsbpnLsDijoq")]
-[assembly: AssemblyProduct("jkKVuYQDjO6rOhf")]
+[assembly: AssemblyTitle("VRise")]
+[assembly: AssemblyDescription("VRise - Game Overlay Tool")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("VRise")]
+[assembly: AssemblyProduct("VRise")]
+[assembly: AssemblyCopyright("Copyright © 2025")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
 
-[assembly: AssemblyVersion("5.0.0.1")]
-[assembly: AssemblyFileVersion("5.0.0.1")]
+[assembly: ThemeInfo(
+    ResourceDictionaryLocation.None,
+    ResourceDictionaryLocation.SourceAssembly
+)]
+
+[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyFileVersion("0.1.0.0")]

@@ -1,11 +1,11 @@
-﻿using X975.Settings;
+﻿using VRise.Settings;
 using PrecisionTiming;
-using X975.Radar.GameObjects.Mobs;
-using X975.Radar.GameObjects.Players;
-using X975.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.Mobs;
+using VRise.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.LocalPlayer;
 using System.Reflection;
 
-namespace X975.Radar
+namespace VRise.Radar
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class GlobalTimer

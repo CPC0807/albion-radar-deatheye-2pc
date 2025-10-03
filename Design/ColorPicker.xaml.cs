@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using System;
 
-namespace X975.Design
+namespace VRise.Design
 {
     public partial class ColorPicker : UserControl
     {

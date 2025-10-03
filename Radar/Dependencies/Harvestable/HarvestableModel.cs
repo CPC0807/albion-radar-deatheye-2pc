@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace X975.Radar.Dependencies.Harvestable
+namespace VRise.Radar.Dependencies.Harvestable
 {
     [XmlRoot(ElementName = "Charge")]
     public class HarvestableChargeMetaData

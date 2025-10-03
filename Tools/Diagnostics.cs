@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace X975.Tools
+namespace VRise.Tools
 {
     public static class Diagnostics
     {

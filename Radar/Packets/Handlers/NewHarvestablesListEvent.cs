@@ -1,7 +1,7 @@
 ﻿using Albion.Network;
 using System.Collections.Generic;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class NewHarvestablesListEvent : BaseEvent
     {

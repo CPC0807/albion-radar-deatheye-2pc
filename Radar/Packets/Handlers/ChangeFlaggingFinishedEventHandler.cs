@@ -1,9 +1,9 @@
 ﻿using Albion.Network;
-using X975.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.Players;
 using System.Threading.Tasks;
-using X975.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.LocalPlayer;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     class ChangeFlaggingFinishedEventHandler : EventPacketHandler<ChangeFlaggingFinishedEvent>
     {

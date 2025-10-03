@@ -1,5 +1,5 @@
-﻿using X975.Pages;
-using X975.Settings;
+﻿using VRise.Pages;
+using VRise.Settings;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -8,10 +8,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using X975.Radar;
-using X975.Tools;
+using VRise.Radar;
+using VRise.Tools;
 
-namespace X975
+namespace VRise
 {
     public partial class MainWindow : Window
     {

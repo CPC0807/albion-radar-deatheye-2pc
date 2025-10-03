@@ -1,9 +1,9 @@
-﻿using X975.Settings;
+﻿using VRise.Settings;
 using System.Windows;
 using System.Windows.Controls;
 using System.Reflection;
 
-namespace X975.Pages
+namespace VRise.Pages
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public partial class ItemsPage : Page

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Collections.Concurrent;
 
-namespace X975.Radar.GameObjects.GatedWisps
+namespace VRise.Radar.GameObjects.GatedWisps
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class GatedWispsHandler

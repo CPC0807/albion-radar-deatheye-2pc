@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
 
-namespace X975.Radar.Dependencies
+namespace VRise.Radar.Dependencies
 {
     public class XmlTools
     {

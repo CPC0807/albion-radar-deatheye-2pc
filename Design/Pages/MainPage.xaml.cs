@@ -1,13 +1,13 @@
 ﻿using System;
-using X975.Settings;
-using X975.Tools;
+using VRise.Settings;
+using VRise.Tools;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Reflection;
 using SharpPcap;
 
-namespace X975.Pages
+namespace VRise.Pages
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public partial class MainPage : Page

@@ -1,8 +1,8 @@
-﻿using X975.Radar.GameObjects.Players;
+﻿using VRise.Radar.GameObjects.Players;
 using Albion.Network;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class KeySyncEventHandler : EventPacketHandler<KeySyncEvent>
     {

@@ -1,16 +1,16 @@
 ﻿using Albion.Network;
 using System.Threading.Tasks;
-using X975.Settings;
-using X975.Radar.GameObjects.Players;
+using VRise.Settings;
+using VRise.Radar.GameObjects.Players;
 using System.IO;
 using System.Media;
-using X975.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.LocalPlayer;
 using System;
 using System.Linq;
 using System.Numerics;
-using X975.Radar.Utility;
+using VRise.Radar.Utility;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class NewCharacterEventHandler : EventPacketHandler<NewCharacterEvent>
     {

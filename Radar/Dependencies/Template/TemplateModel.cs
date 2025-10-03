@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-using X975.Tools;
+using VRise.Tools;
 
-namespace X975.Radar.Dependencies.Template
+namespace VRise.Radar.Dependencies.Template
 {
     [XmlRoot(ElementName = "layer")]
     public class Layer

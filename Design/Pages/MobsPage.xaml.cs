@@ -1,11 +1,11 @@
-﻿using X975.Settings;
-using X975.Tools;
+﻿using VRise.Settings;
+using VRise.Tools;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Reflection;
 
-namespace X975.Pages
+namespace VRise.Pages
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public partial class MobsPage : Page

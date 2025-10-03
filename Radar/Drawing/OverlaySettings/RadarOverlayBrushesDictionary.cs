@@ -1,10 +1,10 @@
-﻿using X975.Settings;
-using X975.Radar.Utility;
+﻿using VRise.Settings;
+using VRise.Radar.Utility;
 using GameOverlay.Drawing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Drawing.OverlaySettings
+namespace VRise.Radar.Drawing.OverlaySettings
 {
     public class RadarOverlayBrushesDictionary
     {

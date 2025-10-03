@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
-using X975.Protocol.Connect.Messages.ResponseObj;
+using VRise.Protocol.Connect.Messages.ResponseObj;
 
-namespace X975.Radar.Dependencies.Item
+namespace VRise.Radar.Dependencies.Item
 {
     public class ItemData
     {

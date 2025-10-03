@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Windows;
 using SharpPcap.LibPcap;
 
-namespace X975.Radar.Sniffer
+namespace VRise.Radar.Sniffer
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class PacketDeviceSelector

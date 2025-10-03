@@ -1,12 +1,12 @@
 ﻿using System;
-using X975.Protocol;
+using VRise.Protocol;
 using Albion.Network;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Reflection;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class ChangeClusterEvent : BaseOperation
     {

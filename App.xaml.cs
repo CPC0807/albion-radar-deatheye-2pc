@@ -1,4 +1,4 @@
-﻿using X975.Settings;
+﻿using VRise.Settings;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 
-namespace X975
+namespace VRise
 {
     public partial class App : Application
     {

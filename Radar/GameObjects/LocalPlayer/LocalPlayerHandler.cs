@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using X975.Radar.Dependencies.Template;
-using X975.Radar.Packets.Handlers;
-using X975.Radar.Utility;
+using VRise.Radar.Dependencies.Template;
+using VRise.Radar.Packets.Handlers;
+using VRise.Radar.Utility;
 
-namespace X975.Radar.GameObjects.LocalPlayer
+namespace VRise.Radar.GameObjects.LocalPlayer
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class LocalPlayerHandler

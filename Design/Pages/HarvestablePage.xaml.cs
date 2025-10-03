@@ -1,5 +1,5 @@
-﻿using X975.Settings;
-using X975.Tools;
+﻿using VRise.Settings;
+using VRise.Tools;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -7,7 +7,7 @@ using Wpf.Ui.Controls;
 using Button = System.Windows.Controls.Button;
 using System.Reflection;
 
-namespace X975.Pages
+namespace VRise.Pages
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public partial class HarvestablePage : Page

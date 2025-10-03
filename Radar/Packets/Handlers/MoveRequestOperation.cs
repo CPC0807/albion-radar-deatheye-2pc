@@ -1,10 +1,10 @@
 ﻿using Albion.Network;
-using X975.Radar.Utility;
+using VRise.Radar.Utility;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class MoveRequestOperation : BaseOperation
     {

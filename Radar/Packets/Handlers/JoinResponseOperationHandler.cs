@@ -1,15 +1,15 @@
-﻿using X975.Radar.GameObjects.LocalPlayer;
-using X975.Radar.GameObjects.Players;
-using X975.Radar.GameObjects.Harvestables;
-using X975.Radar.GameObjects.Mobs;
-using X975.Radar.GameObjects.Dungeons;
-using X975.Radar.GameObjects.FishNodes;
-using X975.Radar.GameObjects.GatedWisps;
-using X975.Radar.GameObjects.LootChests;
+﻿using VRise.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.Harvestables;
+using VRise.Radar.GameObjects.Mobs;
+using VRise.Radar.GameObjects.Dungeons;
+using VRise.Radar.GameObjects.FishNodes;
+using VRise.Radar.GameObjects.GatedWisps;
+using VRise.Radar.GameObjects.LootChests;
 using Albion.Network;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class JoinResponseOperationHandler : ResponsePacketHandler<JoinResponseOperation>
     {

@@ -1,9 +1,9 @@
-﻿<Page x:Class="X975.Pages.PlayersPage"
+﻿<Page x:Class="VRise.Pages.PlayersPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:cp="clr-namespace:X975.Design"
+      xmlns:cp="clr-namespace:VRise.Design"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
       d:DesignHeight="591"
@@ -78,7 +78,7 @@
                                 Foreground="{DynamicResource MainColor}">
                                 </ListBox>
                                 <Border BorderThickness="0 1 0 0" BorderBrush="{DynamicResource BorderColor}">
-                                    <TextBox x:Name="ListTextBox" Margin="5 10 5 10" FontFamily="/X975;component/Design/Font/#Nokia Sans S60" BorderThickness="1" Text="{DynamicResource InputText}" Cursor="IBeam" KeyDown="ManualListTextBox_KeyDown" GotKeyboardFocus="ListTextBox_GotKeyboardFocus" LostKeyboardFocus="ListTextBox_LostKeyboardFocus"/>
+                                    <TextBox x:Name="ListTextBox" Margin="5 10 5 10" FontFamily="/VRise;component/Design/Font/#Nokia Sans S60" BorderThickness="1" Text="{DynamicResource InputText}" Cursor="IBeam" KeyDown="ManualListTextBox_KeyDown" GotKeyboardFocus="ListTextBox_GotKeyboardFocus" LostKeyboardFocus="ListTextBox_LostKeyboardFocus"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
@@ -273,10 +273,10 @@
                         <TextBlock Text="{DynamicResource VisibleContact}" FontSize="16" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Border x:Name="VisibleContactColor" Width="25" Height="25" VerticalAlignment="Center" Background="White" CornerRadius="5" MouseLeftButtonUp="VisibleContactColor_MouseLeftButtonDown">
-                                <TextBlock Text="B" FontFamily="/X975;component/Design/Font/#DEATHEYE" FontSize="17" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <TextBlock Text="B" FontFamily="/VRise;component/Design/Font/#DEATHEYE" FontSize="17" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Border>
                             <Border x:Name="VisibleContactColor2" Margin="8 0 0 0" Width="25" Height="25" VerticalAlignment="Center" Background="White" CornerRadius="5" MouseLeftButtonUp="VisibleContactColor2_MouseLeftButtonDown">
-                                <TextBlock Text="A" FontFamily="/X975;component/Design/Font/#DEATHEYE" FontSize="17" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <TextBlock Text="A" FontFamily="/VRise;component/Design/Font/#DEATHEYE" FontSize="17" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Border>
                             
                             <ui:ToggleSwitch x:Name="VisibleContactToggle" Margin="8 0 0 0" Checked="VisibleContactToggle_Checked" Unchecked="VisibleContactToggle_Checked"/>

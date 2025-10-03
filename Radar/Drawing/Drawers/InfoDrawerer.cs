@@ -1,12 +1,12 @@
 ﻿using GameOverlay.Drawing;
 using System.Threading.Tasks;
-using X975.Radar.GameObjects.LocalPlayer;
-using X975.Radar.Utility;
-using X975.Radar.OverlaySettings;
+using VRise.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.Utility;
+using VRise.Radar.OverlaySettings;
 using System;
-using X975.Radar.Drawing.Overlays;
+using VRise.Radar.Drawing.Overlays;
 
-namespace X975.Radar.Drawers
+namespace VRise.Radar.Drawers
 {
     public class InfoDrawerer : IDrawerer
     {

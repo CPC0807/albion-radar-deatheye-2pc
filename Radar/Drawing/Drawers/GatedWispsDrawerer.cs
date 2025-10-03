@@ -1,16 +1,16 @@
-﻿using X975.Settings;
-using X975.Radar.Drawing.OverlaySettings;
-using X975.Radar.Utility;
+﻿using VRise.Settings;
+using VRise.Radar.Drawing.OverlaySettings;
+using VRise.Radar.Utility;
 using System.Numerics;
 using GameOverlay.Drawing;
 using System;
 using System.Threading.Tasks;
-using X975.Radar.GameObjects.GatedWisps;
+using VRise.Radar.GameObjects.GatedWisps;
 using System.Linq;
-using X975.Radar.GameObjects.LocalPlayer;
-using X975.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.Players;
 
-namespace X975.Radar.Drawers
+namespace VRise.Radar.Drawers
 {
     public class GatedWispsDrawerer : IDrawerer
     {

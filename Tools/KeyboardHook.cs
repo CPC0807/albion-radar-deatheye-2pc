@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace X975.Tools
+namespace VRise.Tools
 {
     public class KeyboardHook
     {

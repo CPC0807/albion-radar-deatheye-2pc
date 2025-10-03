@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Reflection;
 
-namespace X975.Radar.GameObjects.GatedWisps
+namespace VRise.Radar.GameObjects.GatedWisps
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class GatedWisp

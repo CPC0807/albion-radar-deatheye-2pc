@@ -1,9 +1,9 @@
-using Albion.Network;
+﻿using Albion.Network;
 using System;
 using System.Threading.Tasks;
-using X975.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.Players;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class BruteForceKeySyncHandler : EventPacketHandler<BruteForceKeySyncEvent>
     {

@@ -1,10 +1,10 @@
 ﻿using GameOverlay.Drawing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using X975.Settings;
-using X975.Tools;
+using VRise.Settings;
+using VRise.Tools;
 
-namespace X975.Radar.OverlaySettings
+namespace VRise.Radar.OverlaySettings
 {
     public class ItemsOverlayBrushesDictionary
     {

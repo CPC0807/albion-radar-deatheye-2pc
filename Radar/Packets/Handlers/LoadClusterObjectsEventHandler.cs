@@ -1,11 +1,11 @@
-﻿using X975.Radar.GameObjects.LocalPlayer;
+﻿using VRise.Radar.GameObjects.LocalPlayer;
 using Albion.Network;
 using System.Threading.Tasks;
 using System.IO;
 using System.Media;
-using X975.Settings;
+using VRise.Settings;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     class LoadClusterObjectsEventHandler : EventPacketHandler<LoadClusterObjectsEvent>
     {

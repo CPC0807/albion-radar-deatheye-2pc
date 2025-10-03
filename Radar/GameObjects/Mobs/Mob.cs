@@ -1,10 +1,10 @@
 ﻿using System.Numerics;
 using System;
-using X975.Radar.GameObjects.Players;
-using X975.Protocol.Connect.Messages.ResponseObj;
+using VRise.Radar.GameObjects.Players;
+using VRise.Protocol.Connect.Messages.ResponseObj;
 using System.Reflection;
 
-namespace X975.Radar.GameObjects.Mobs
+namespace VRise.Radar.GameObjects.Mobs
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class Mob

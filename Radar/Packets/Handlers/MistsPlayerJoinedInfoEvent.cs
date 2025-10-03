@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     class MistsPlayerJoinedInfoEvent : BaseEvent
     {

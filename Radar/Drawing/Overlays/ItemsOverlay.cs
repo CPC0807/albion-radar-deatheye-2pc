@@ -1,12 +1,11 @@
-﻿using X975.Radar.Utility;
-using X975.Radar.GameObjects.Players;
-using X975.Radar.GameObjects.LocalPlayer;
+﻿using VRise.Radar.Utility;
+using VRise.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.LocalPlayer;
 using System.Threading.Tasks;
-using X975.Radar.Drawers;
-using X977.Radar.OverlaySettings;
-using X975.Radar.OverlaySettings;
+using VRise.Radar.Drawers;
+using VRise.Radar.OverlaySettings;
 
-namespace X975.Radar.Drawing.Overlays
+namespace VRise.Radar.Drawing.Overlays
 {
     public class ItemsOverlay : Overlay
     {

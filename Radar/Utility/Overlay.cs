@@ -2,7 +2,7 @@
 using GameOverlay.Windows;
 using System.Threading.Tasks;
 
-namespace X975.Radar
+namespace VRise.Radar
 {
     public abstract class Overlay : GraphicsWindow
     {

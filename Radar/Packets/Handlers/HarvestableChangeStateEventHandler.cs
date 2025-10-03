@@ -1,8 +1,8 @@
 ﻿using Albion.Network;
-using X975.Radar.GameObjects.Harvestables;
+using VRise.Radar.GameObjects.Harvestables;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class HarvestableChangeStateEventHandler : EventPacketHandler<HarvestableChangeStateEvent>
     {

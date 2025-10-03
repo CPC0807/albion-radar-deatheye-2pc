@@ -1,4 +1,4 @@
-﻿using X975.Tools;
+﻿using VRise.Tools;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace X975.Settings
+namespace VRise.Settings
 {
     public class ConfigHandler
     {

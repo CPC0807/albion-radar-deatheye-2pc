@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace X975.Tools
+namespace VRise.Tools
 {
     public class Pathfinder
     {

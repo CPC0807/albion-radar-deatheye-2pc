@@ -1,14 +1,14 @@
-﻿using X975.Settings;
-using X975.Radar.Drawing.OverlaySettings;
-using X975.Radar.Utility;
+﻿using VRise.Settings;
+using VRise.Radar.Drawing.OverlaySettings;
+using VRise.Radar.Utility;
 using GameOverlay.Drawing;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
-using X975.Radar.GameObjects.FishNodes;
-using X975.Radar.GameObjects.LocalPlayer;
+using VRise.Radar.GameObjects.FishNodes;
+using VRise.Radar.GameObjects.LocalPlayer;
 
-namespace X975.Radar.Drawers
+namespace VRise.Radar.Drawers
 {
     public class FishNodesDrawerer : IDrawerer
     {

@@ -1,6 +1,6 @@
 ﻿using GameOverlay.Drawing;
 
-namespace X975.Radar
+namespace VRise.Radar
 {
     public class OverlayGraphics : Graphics
     {

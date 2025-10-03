@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Collections.Concurrent;
 
-namespace X975.Radar.GameObjects.LootChests
+namespace VRise.Radar.GameObjects.LootChests
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class LootChestsHandler

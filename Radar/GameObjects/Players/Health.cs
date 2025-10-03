@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace X975.Radar.GameObjects.Players
+namespace VRise.Radar.GameObjects.Players
 {
     [Obfuscation(Feature = "mutation", Exclude = false)]
     public class Health

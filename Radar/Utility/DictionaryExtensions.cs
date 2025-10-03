@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace X975.Radar.Utility
+namespace VRise.Radar.Utility
 {
     public static class DictionaryExtensions
     {

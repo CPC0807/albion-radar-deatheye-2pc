@@ -1,8 +1,8 @@
 ﻿using Albion.Network;
-using X975.Radar.GameObjects.Players;
+using VRise.Radar.GameObjects.Players;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     class CharacterEquipmentChangedEventHandler : EventPacketHandler<CharacterEquipmentChanged>
     {

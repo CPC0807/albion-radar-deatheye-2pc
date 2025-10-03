@@ -1,9 +1,9 @@
-using Albion.Network;
+﻿using Albion.Network;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     /// <summary>
     /// 調試用：監聽所有事件，尋找可能包含XorCode的封包

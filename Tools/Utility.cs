@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace X975.Tools
+namespace VRise.Tools
 {
     public static class Utility
     {

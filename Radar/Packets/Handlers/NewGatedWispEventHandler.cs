@@ -1,8 +1,8 @@
 ﻿using Albion.Network;
 using System.Threading.Tasks;
-using X975.Radar.GameObjects.GatedWisps;
+using VRise.Radar.GameObjects.GatedWisps;
 
-namespace X975.Radar.Packets.Handlers
+namespace VRise.Radar.Packets.Handlers
 {
     public class NewGatedWispEventHandler : EventPacketHandler<NewGatedWispEvent>
     {

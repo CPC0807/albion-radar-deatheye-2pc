@@ -1,8 +1,8 @@
-﻿using X975.Tools;
+﻿using VRise.Tools;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace X975.Settings
+namespace VRise.Settings
 {
     public class Config
     {
