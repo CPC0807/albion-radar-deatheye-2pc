@@ -31,31 +31,31 @@ namespace VRise.Pages
                 BackgroundColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[0].ToString());
 
                 MeshColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[1].ToString());
-                MeshThiknessSlider.Value = Convert.ToInt32(configHandler.config.StyleSettings[2]);
+                MeshThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[2]);
 
                 OutColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[3].ToString());
-                OutThiknessSlider.Value = Convert.ToInt32(configHandler.config.StyleSettings[4]);
+                OutThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[4]);
 
                 switch (activeLayer)
                 {
                     case 0:
-                        FigureCB.SelectedIndex = int.Parse(configHandler.config.StyleSettings[8].ToString());
-                        FovScaleSlider.Value = int.Parse(configHandler.config.StyleSettings[7].ToString());
-                        FovThiknessSlider.Value = int.Parse(configHandler.config.StyleSettings[6].ToString());
+                        FigureCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[8].ToString());
+                        FovScaleSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[7].ToString());
+                        FovThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6].ToString());
                         FovColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[5].ToString());
                         break;
 
                     case 1:
-                        FigureCB.SelectedIndex = int.Parse(configHandler.config.StyleSettings[12].ToString());
-                        FovScaleSlider.Value = int.Parse(configHandler.config.StyleSettings[11].ToString());
-                        FovThiknessSlider.Value = int.Parse(configHandler.config.StyleSettings[10].ToString());
+                        FigureCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[12].ToString());
+                        FovScaleSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[11].ToString());
+                        FovThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10].ToString());
                         FovColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[9].ToString());
                         break;
 
                     case 2:
-                        FigureCB.SelectedIndex = int.Parse(configHandler.config.StyleSettings[16].ToString());
-                        FovScaleSlider.Value = int.Parse(configHandler.config.StyleSettings[15].ToString());
-                        FovThiknessSlider.Value = int.Parse(configHandler.config.StyleSettings[14].ToString());
+                        FigureCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[16].ToString());
+                        FovScaleSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[15].ToString());
+                        FovThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14].ToString());
                         FovColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[13].ToString());
                         break;
                 }
@@ -70,8 +70,8 @@ namespace VRise.Pages
                 }
 
                 CenterColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[17].ToString());
-                CenterThiknessSlider.Value = Convert.ToInt32(configHandler.config.StyleSettings[18]);
-                CenterCB.SelectedIndex = Convert.ToInt32(configHandler.config.StyleSettings[19]);
+                CenterThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]);
+                CenterCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[19]);
 
                 #endregion
 
@@ -132,23 +132,23 @@ namespace VRise.Pages
             switch (activeLayer)
             {
                 case 0:
-                    FigureCB.SelectedIndex = int.Parse(configHandler.config.StyleSettings[8].ToString());
-                    FovScaleSlider.Value = int.Parse(configHandler.config.StyleSettings[7].ToString());
-                    FovThiknessSlider.Value = int.Parse(configHandler.config.StyleSettings[6].ToString());
+                    FigureCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[8].ToString());
+                    FovScaleSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[7].ToString());
+                    FovThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6].ToString());
                     FovColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[5].ToString());
                     break;
 
                 case 1:
-                    FigureCB.SelectedIndex = int.Parse(configHandler.config.StyleSettings[12].ToString());
-                    FovScaleSlider.Value = int.Parse(configHandler.config.StyleSettings[11].ToString());
-                    FovThiknessSlider.Value = int.Parse(configHandler.config.StyleSettings[10].ToString());
+                    FigureCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[12].ToString());
+                    FovScaleSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[11].ToString());
+                    FovThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10].ToString());
                     FovColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[9].ToString());
                     break;
 
                 case 2:
-                    FigureCB.SelectedIndex = int.Parse(configHandler.config.StyleSettings[16].ToString());
-                    FovScaleSlider.Value = int.Parse(configHandler.config.StyleSettings[15].ToString());
-                    FovThiknessSlider.Value = int.Parse(configHandler.config.StyleSettings[14].ToString());
+                    FigureCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[16].ToString());
+                    FovScaleSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[15].ToString());
+                    FovThiknessSlider.Value = ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14].ToString());
                     FovColorPicker.Color = (Color)ColorConverter.ConvertFromString(configHandler.config.StyleSettings[13].ToString());
                     break;
             }

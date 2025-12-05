@@ -45,7 +45,7 @@ namespace VRise.Radar.Drawers
                     0,
                     horyzontalCount * x,
                     configHandler.config.Height,
-                    Convert.ToInt32(configHandler.config.StyleSettings[2]));
+                    ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[2]));
             }
 
             for (int y = 0; y < configHandler.config.Height / verticalCount; y++)
@@ -56,37 +56,37 @@ namespace VRise.Radar.Drawers
                     horyzontalCount * y,
                     configHandler.config.Width,
                     horyzontalCount * y,
-                    Convert.ToInt32(configHandler.config.StyleSettings[2]));
+                    ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[2]));
             }
 
             #endregion
 
             #region OUTLINE
 
-            gfx.DrawRectangle(brushesDictionary._brushes["Outline"], 0, 0, configHandler.config.Width, configHandler.config.Height, Convert.ToInt32(configHandler.config.StyleSettings[4]));
+            gfx.DrawRectangle(brushesDictionary._brushes["Outline"], 0, 0, configHandler.config.Width, configHandler.config.Height, ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[4]));
 
             #endregion
 
             #region FOV
 
-            switch (Convert.ToInt32(configHandler.config.StyleSettings[8]))
+            switch (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[8]))
             {
                 case 0:
                     gfx.DrawEllipse(brushesDictionary._brushes["FovFirst"],
                         configHandler.config.Width / 2,
                         configHandler.config.Height / 2,
-                        configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[6]) / 2,
-                        configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[6]) / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[6]));
+                        configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]) / 2,
+                        configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]) / 2,
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]));
                     break;
 
                 case 1:
                     gfx.DrawRectangle(brushesDictionary._brushes["FovFirst"],
-                        configHandler.config.Width / 2 - configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 + Convert.ToInt32(configHandler.config.StyleSettings[6]) / 2,
-                        configHandler.config.Height / 2 - configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 + Convert.ToInt32(configHandler.config.StyleSettings[6]) / 2,
-                        configHandler.config.Width / 2 + configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[6]) / 2,
-                        configHandler.config.Height / 2 + configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[6]) / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[6]));
+                        configHandler.config.Width / 2 - configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 + ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]) / 2,
+                        configHandler.config.Height / 2 - configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 + ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]) / 2,
+                        configHandler.config.Width / 2 + configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]) / 2,
+                        configHandler.config.Height / 2 + configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[7]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]) / 2,
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[6]));
                     break;
 
                 case 2:
@@ -106,24 +106,24 @@ namespace VRise.Radar.Drawers
                     break;
             }
 
-            switch (Convert.ToInt32(configHandler.config.StyleSettings[12]))
+            switch (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[12]))
             {
                 case 0:
                     gfx.DrawEllipse(brushesDictionary._brushes["FovSecond"],
                         configHandler.config.Width / 2,
                         configHandler.config.Height / 2,
-                        configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[10]) / 2,
-                        configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[10]) / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[10]));
+                        configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]) / 2,
+                        configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]) / 2,
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]));
                     break;
 
                 case 1:
                     gfx.DrawRectangle(brushesDictionary._brushes["FovSecond"],
-                        configHandler.config.Width / 2 - configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 + Convert.ToInt32(configHandler.config.StyleSettings[10]) / 2,
-                        configHandler.config.Height / 2 - configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 + Convert.ToInt32(configHandler.config.StyleSettings[10]) / 2,
-                        configHandler.config.Width / 2 + configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[10]) / 2,
-                        configHandler.config.Height / 2 + configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[10]) / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[10]));
+                        configHandler.config.Width / 2 - configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 + ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]) / 2,
+                        configHandler.config.Height / 2 - configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 + ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]) / 2,
+                        configHandler.config.Width / 2 + configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]) / 2,
+                        configHandler.config.Height / 2 + configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[11]) / 100 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]) / 2,
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[10]));
                     break;
 
                 case 2:
@@ -143,24 +143,24 @@ namespace VRise.Radar.Drawers
                     break;
             }
 
-            switch (Convert.ToInt32(configHandler.config.StyleSettings[16]))
+            switch (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[16]))
             {
                 case 0:
                     gfx.DrawEllipse(brushesDictionary._brushes["FovThird"],
                         configHandler.config.Width / 2,
                         configHandler.config.Height / 2,
-                        configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[14]) / 2,
-                        configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[14]) / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[14]));
+                        configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]) / 2,
+                        configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]) / 2,
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]));
                     break;
 
                 case 1:
                     gfx.DrawRectangle(brushesDictionary._brushes["FovThird"],
-                        configHandler.config.Width / 2 - configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 + Convert.ToInt32(configHandler.config.StyleSettings[14]) / 2,
-                        configHandler.config.Height / 2 - configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 + Convert.ToInt32(configHandler.config.StyleSettings[14]) / 2,
-                        configHandler.config.Width / 2 + configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[14]) / 2,
-                        configHandler.config.Height / 2 + configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - Convert.ToInt32(configHandler.config.StyleSettings[14]) / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[14]));
+                        configHandler.config.Width / 2 - configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 + ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]) / 2,
+                        configHandler.config.Height / 2 - configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 + ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]) / 2,
+                        configHandler.config.Width / 2 + configHandler.config.Width * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]) / 2,
+                        configHandler.config.Height / 2 + configHandler.config.Height * Convert.ToSingle(configHandler.config.StyleSettings[15]) / 140 / 2 - ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]) / 2,
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[14]));
                     break;
 
                 case 2:
@@ -184,7 +184,7 @@ namespace VRise.Radar.Drawers
 
             #region CENTER
 
-            switch (Convert.ToInt32(configHandler.config.StyleSettings[19]))
+            switch (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[19]))
             {
                 case 0:
                     gfx.DrawLine(brushesDictionary._brushes["Centering"],
@@ -192,37 +192,37 @@ namespace VRise.Radar.Drawers
                         0,
                         configHandler.config.Width / 2,
                         configHandler.config.Height,
-                        Convert.ToInt32(configHandler.config.StyleSettings[18]));
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]));
 
                     gfx.DrawLine(brushesDictionary._brushes["Centering"],
                         0,
                         configHandler.config.Height / 2,
                         configHandler.config.Width,
                         configHandler.config.Height / 2,
-                        Convert.ToInt32(configHandler.config.StyleSettings[18]));
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]));
                     break;
 
                 case 1:
                     gfx.DrawEllipse(brushesDictionary._brushes["Centering"],
                         configHandler.config.Width / 2,
                         configHandler.config.Height / 2,
-                        configHandler.config.Width / 2 - (Convert.ToInt32(configHandler.config.StyleSettings[18]) / 2),
-                        configHandler.config.Height / 2 - (Convert.ToInt32(configHandler.config.StyleSettings[18]) / 2),
-                        Convert.ToInt32(configHandler.config.StyleSettings[18]));
+                        configHandler.config.Width / 2 - (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]) / 2),
+                        configHandler.config.Height / 2 - (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]) / 2),
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]));
 
                     gfx.DrawEllipse(brushesDictionary._brushes["Centering"],
                         configHandler.config.Width / 2,
                         configHandler.config.Height / 2,
-                        configHandler.config.Width / 2 * 0.8f - (Convert.ToInt32(configHandler.config.StyleSettings[18]) / 2),
-                        configHandler.config.Height / 2 * 0.8f - (Convert.ToInt32(configHandler.config.StyleSettings[18]) / 2),
-                        Convert.ToInt32(configHandler.config.StyleSettings[18]));
+                        configHandler.config.Width / 2 * 0.8f - (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]) / 2),
+                        configHandler.config.Height / 2 * 0.8f - (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]) / 2),
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]));
 
                     gfx.DrawEllipse(brushesDictionary._brushes["Centering"],
                         configHandler.config.Width / 2,
                         configHandler.config.Height / 2,
-                        configHandler.config.Width / 2 * 0.6f - (Convert.ToInt32(configHandler.config.StyleSettings[18]) / 2),
-                        configHandler.config.Height / 2 * 0.6f - (Convert.ToInt32(configHandler.config.StyleSettings[18]) / 2),
-                        Convert.ToInt32(configHandler.config.StyleSettings[18]));
+                        configHandler.config.Width / 2 * 0.6f - (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]) / 2),
+                        configHandler.config.Height / 2 * 0.6f - (ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]) / 2),
+                        ConfigHandler.SafeConvertToInt32(configHandler.config.StyleSettings[18]));
                     break;
             }
 

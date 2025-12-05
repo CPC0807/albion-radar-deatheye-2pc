@@ -76,6 +76,38 @@ namespace VRise.Settings
             await Task.Run(() => File.WriteAllText(Pathfinder.mainFolder + "\\" + selectedConfig + ".cfg", JsonConvert.SerializeObject(config, Formatting.Indented)));
         }
 
+        /// <summary>
+        /// Safely converts an object to int32, handling various types including strings, longs, and nullable values
+        /// </summary>
+        public static int SafeConvertToInt32(object value, int defaultValue = 0)
+        {
+            if (value == null) return defaultValue;
+
+            try
+            {
+                // Handle different possible types from JSON deserialization
+                if (value is int intValue) return intValue;
+                if (value is long longValue) return (int)longValue;
+                if (value is double doubleValue) return (int)doubleValue;
+                if (value is float floatValue) return (int)floatValue;
+                if (value is string strValue)
+                {
+                    // Try to parse string to int
+                    if (int.TryParse(strValue, out int result))
+                        return result;
+                    // String is not a number (probably a color code)
+                    return defaultValue;
+                }
+
+                // Fallback to Convert.ToInt32 for other types
+                return System.Convert.ToInt32(value);
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
+
         public void CreateConfig(string name = null)
         {
             if (!Directory.Exists(Pathfinder.mainFolder))

@@ -20,19 +20,66 @@ namespace VRise.Radar.GameObjects.Players
 
         public float[] Decrypt(byte[] coordinates, int offset = 0)
         {
+            // 驗證輸入
+            if (coordinates == null)
+            {
+                #if DEBUG
+                Console.WriteLine($"[Decrypt] ERROR: coordinates is NULL!");
+                #endif
+                return new float[] { 0f, 0f };
+            }
+
+            if (coordinates.Length < offset + 8)
+            {
+                #if DEBUG
+                Console.WriteLine($"[Decrypt] ERROR: coordinates length {coordinates.Length} is too short for offset {offset}!");
+                #endif
+                return new float[] { 0f, 0f };
+            }
+
             var code = XorCode;
             if (code == null)
             {
-                return new[] { BitConverter.ToSingle(coordinates, offset), BitConverter.ToSingle(coordinates, offset + 4) };
+                // 如果沒有 XorCode，嘗試直接解析（可能座標未加密）
+                try
+                {
+                    return new[] { BitConverter.ToSingle(coordinates, offset), BitConverter.ToSingle(coordinates, offset + 4) };
+                }
+                catch (Exception ex)
+                {
+                    #if DEBUG
+                    Console.WriteLine($"[Decrypt] ERROR parsing unencrypted coordinates: {ex.Message}");
+                    #endif
+                    return new float[] { 0f, 0f };
+                }
             }
 
-            var x = coordinates.Skip(offset).Take(4).ToArray();
-            var y = coordinates.Skip(offset + 4).Take(4).ToArray();
+            try
+            {
+                var x = coordinates.Skip(offset).Take(4).ToArray();
+                var y = coordinates.Skip(offset + 4).Take(4).ToArray();
 
-            Decrypt(x, code, 0);
-            Decrypt(y, code, 4);
+                if (x.Length != 4 || y.Length != 4)
+                {
+                    #if DEBUG
+                    Console.WriteLine($"[Decrypt] ERROR: Invalid array lengths after Skip/Take: x={x.Length}, y={y.Length}");
+                    #endif
+                    return new float[] { 0f, 0f };
+                }
 
-            return new[] { BitConverter.ToSingle(x, 0), BitConverter.ToSingle(y, 0) };
+                Decrypt(x, code, 0);
+                Decrypt(y, code, 4);
+
+                return new[] { BitConverter.ToSingle(x, 0), BitConverter.ToSingle(y, 0) };
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                Console.WriteLine($"[Decrypt] ERROR: {ex.GetType().Name} - {ex.Message}");
+                Console.WriteLine($"[Decrypt] Stack trace: {ex.StackTrace}");
+                #endif
+                return new float[] { 0f, 0f };
+            }
         }
 
         private static void Decrypt(byte[] bytes4, byte[] saltBytes8, int saltPos)
@@ -158,9 +205,93 @@ namespace VRise.Radar.GameObjects.Players
         {
             lock (playersList)
             {
-                // 測試：Albion可能不再加密座標，直接解析試試
-                Vector2 position = new Vector2(BitConverter.ToSingle(positionBytes, 4), BitConverter.ToSingle(positionBytes, 0));
-                Vector2 newPosition = new Vector2(BitConverter.ToSingle(newPositionBytes, 4), BitConverter.ToSingle(newPositionBytes, 0));
+                #if DEBUG
+                // Debug: 診斷參數類型
+                if (positionBytes == null)
+                {
+                    Console.WriteLine($"[UpdatePlayerPosition] ERROR: positionBytes is NULL!");
+                    return;
+                }
+                if (newPositionBytes == null)
+                {
+                    Console.WriteLine($"[UpdatePlayerPosition] ERROR: newPositionBytes is NULL!");
+                    return;
+                }
+                if (positionBytes.Length != 8)
+                {
+                    Console.WriteLine($"[UpdatePlayerPosition] WARNING: positionBytes length is {positionBytes.Length} (expected 8)");
+                }
+                if (newPositionBytes.Length != 8)
+                {
+                    Console.WriteLine($"[UpdatePlayerPosition] WARNING: newPositionBytes length is {newPositionBytes.Length} (expected 8)");
+                }
+
+                // Debug: 診斷 XorCode 狀態
+                if (XorCode == null)
+                {
+                    Console.WriteLine($"[XorCode] WARNING: XorCode is NULL! Cannot decrypt positions.");
+                    Console.WriteLine($"[XorCode] Make sure KeySync event (ID 593) is triggered when entering a new zone.");
+                }
+                else if (XorCode.Length != 8)
+                {
+                    Console.WriteLine($"[XorCode] WARNING: Invalid XorCode length: {XorCode.Length} (expected 8)");
+                }
+                #endif
+
+                // 使用 Decrypt 方法解密座標
+                float[] pos;
+                float[] newPos;
+
+                try
+                {
+                    pos = Decrypt(positionBytes);
+                    newPos = Decrypt(newPositionBytes);
+                }
+                catch (InvalidCastException ex)
+                {
+                    #if DEBUG
+                    Console.WriteLine($"[UpdatePlayerPosition] InvalidCastException: {ex.Message}");
+                    Console.WriteLine($"[UpdatePlayerPosition] positionBytes type: {positionBytes?.GetType().Name ?? "null"}");
+                    Console.WriteLine($"[UpdatePlayerPosition] newPositionBytes type: {newPositionBytes?.GetType().Name ?? "null"}");
+                    #endif
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    #if DEBUG
+                    Console.WriteLine($"[UpdatePlayerPosition] Exception in Decrypt: {ex.GetType().Name} - {ex.Message}");
+                    #endif
+                    return;
+                }
+
+                Vector2 position = new Vector2(pos[0], pos[1]);
+                Vector2 newPosition = new Vector2(newPos[0], newPos[1]);
+
+                #if DEBUG
+                // 檢測異常的座標值（可能表示解密失敗）
+                bool isAbnormal = false;
+                if (Math.Abs(position.X) > 100000 || Math.Abs(position.Y) > 100000)
+                {
+                    isAbnormal = true;
+                    Console.WriteLine($"\n========== [ABNORMAL POSITION DETECTED!] ==========");
+                    Console.WriteLine($"  Player ID: {id}");
+                    Console.WriteLine($"  Decrypted Position: ({position.X:F2}, {position.Y:F2})");
+                    Console.WriteLine($"  Raw positionBytes: {BitConverter.ToString(positionBytes)}");
+                    Console.WriteLine($"  XorCode: {(XorCode != null ? BitConverter.ToString(XorCode) : "NULL")}");
+                    Console.WriteLine($"  XorCode Length: {XorCode?.Length ?? 0}");
+
+                    // 嘗試不解密直接讀取
+                    float directX = BitConverter.ToSingle(positionBytes, 0);
+                    float directY = BitConverter.ToSingle(positionBytes, 4);
+                    Console.WriteLine($"  Direct read (X at 0, Y at 4): ({directX:F2}, {directY:F2})");
+
+                    // 嘗試反向讀取
+                    float reverseX = BitConverter.ToSingle(positionBytes, 4);
+                    float reverseY = BitConverter.ToSingle(positionBytes, 0);
+                    Console.WriteLine($"  Reverse read (X at 4, Y at 0): ({reverseX:F2}, {reverseY:F2})");
+                    Console.WriteLine($"==================================================\n");
+                }
+                #endif
 
                 if (playersList.TryGetValue(id, out Player player))
                 {
@@ -170,9 +301,19 @@ namespace VRise.Radar.GameObjects.Players
                     player.Time = time;
                     player.NewPosition = newPosition;
 
-                    // Debug: 輸出玩家位置更新信息（可以在測試後移除）
                     #if DEBUG
-                    Console.WriteLine($"[PlayerPos] ID:{id} Name:{player.Name} Pos:({position.X:F2},{position.Y:F2}) NewPos:({newPosition.X:F2},{newPosition.Y:F2}) Speed:{speed:F2}");
+                    // Debug: 只輸出正常的位置信息
+                    if (!isAbnormal)
+                    {
+                        Console.WriteLine($"[PlayerPos] ID:{id} Name:{player.Name} Pos:({position.X:F2},{position.Y:F2}) NewPos:({newPosition.X:F2},{newPosition.Y:F2}) Speed:{speed:F2}");
+                    }
+
+                    // 如果位置是 (0.00, 0.00)，輸出原始數據
+                    if (position.X == 0.0f && position.Y == 0.0f && !isAbnormal)
+                    {
+                        Console.WriteLine($"[DEBUG] Position is (0,0) - Raw bytes: {BitConverter.ToString(positionBytes)}");
+                        Console.WriteLine($"[DEBUG] XorCode: {(XorCode != null ? BitConverter.ToString(XorCode) : "NULL")}");
+                    }
                     #endif
                 }
             }

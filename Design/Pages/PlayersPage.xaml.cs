@@ -306,13 +306,13 @@ namespace VRise.Pages
         void LoadPlayerSettings()
         {
             DotEnabled.IsChecked = Convert.ToBoolean(activePlayerSettings[0]);
-            DotStyleComboBox.SelectedIndex = Convert.ToInt32(activePlayerSettings[1]);
+            DotStyleComboBox.SelectedIndex = ConfigHandler.SafeConvertToInt32(activePlayerSettings[1]);
 
             DotStyleLogic();
 
-            PDotSizeSlider.Value = Convert.ToInt32(activePlayerSettings[4]);
+            PDotSizeSlider.Value = ConfigHandler.SafeConvertToInt32(activePlayerSettings[4]);
 
-            DetectSoundCB.SelectedIndex = Convert.ToInt32(activePlayerSettings[5]);
+            DetectSoundCB.SelectedIndex = ConfigHandler.SafeConvertToInt32(activePlayerSettings[5]);
 
             NickToggle.IsChecked = Convert.ToBoolean(activePlayerSettings[6]);
             NickColorCP.Color = (Color)ColorConverter.ConvertFromString(activePlayerSettings[7].ToString());
@@ -334,7 +334,7 @@ namespace VRise.Pages
             VisibleContactColorCP.Color = (Color)ColorConverter.ConvertFromString(activePlayerSettings[15].ToString());
             VisibleContactColor.Background = new SolidColorBrush(VisibleContactColorCP.Color);
 
-            HealthComboBox.SelectedIndex = Convert.ToInt32(activePlayerSettings[16]);
+            HealthComboBox.SelectedIndex = ConfigHandler.SafeConvertToInt32(activePlayerSettings[16]);
 
             if (HealthComboBox.SelectedIndex == 2)
             {
@@ -360,7 +360,7 @@ namespace VRise.Pages
 
         private void DotStyleLogic()
         {
-            if (Convert.ToInt32(activePlayerSettings[1]) == 0)
+            if (ConfigHandler.SafeConvertToInt32(activePlayerSettings[1]) == 0)
             {
                 DotMainColor.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(activePlayerSettings[2].ToString()));
                 DotMainColorCP.Color = (Color)ColorConverter.ConvertFromString(activePlayerSettings[2].ToString());

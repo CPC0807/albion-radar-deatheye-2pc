@@ -4,211 +4,278 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DEATHEYE is a radar application for Albion Online designed to run on a separate device from the game client. It's a WPF application (.NET Framework 4.8, C#) that captures game network traffic to display real-time information about players, resources, mobs, and dungeons on an overlay.
+VRise (formerly DEATHEYE) is a radar application for Albion Online designed to run on a separate device from the game client. It's a WPF application (.NET Framework 4.8, C#) that captures game network traffic to display real-time information about players, resources, mobs, and dungeons on an overlay.
 
-**Important Changes in This Version:**
-- ✅ **No Cryptonite required** - Uses direct packet forwarding instead
-- ✅ **No hosts file modification** - More secure setup
-- ✅ **Dual mode support** - Can use either npcap (local) or TCP receiver (remote)
-
-This tool is detected by BattlEye anti-cheat and is intended for 2-device setups only.
+**Important:**
+- ✅ **Simplified setup** - No Cryptonite required, no hosts file modification needed
+- ✅ **Configurable game port** - Easy port configuration via `network_config.json`
+- ⚠️ This tool is detected by BattlEye anti-cheat and is intended for 2-device setups only
 
 ## Build Commands
 
 ### Building the Project
 ```bash
-# Open solution in Visual Studio or use MSBuild
+# Using MSBuild
 msbuild DEATHEYE.sln /p:Configuration=Release /p:Platform=AnyCPU
+
+# Or for specific platforms
+msbuild DEATHEYE.sln /p:Configuration=Release /p:Platform=x64
+msbuild DEATHEYE.sln /p:Configuration=Debug /p:Platform=AnyCPU
 ```
 
 ### Build Output
 - Debug: `bin\Debug\`
 - Release: `bin\Release\`
+- x64: `bin\x64\Release\` or `bin\x64\Debug\`
 - The AfterBuild target automatically copies `ITEMS\` and `ao-bin-dumps\` directories to output
 
 ### Prerequisites
 1. .NET Framework 4.8 SDK
-2. npcap (for packet capture)
-3. Required external data:
-   - `ITEMS\` directory with item images (not in repo, download separately)
-   - `ao-bin-dumps\` directory with XML data files (not in repo, download from ao-data/ao-bin-dumps)
+2. npcap (for packet capture) - https://npcap.com/
+3. Required external data (not in repository):
+   - `ITEMS\` directory with item images
+   - `ao-bin-dumps\` directory with XML data files from https://github.com/ao-data/ao-bin-dumps
+   - DEATHEYE.ttf font (for overlay icons)
 
 ## Architecture
 
 ### Core Components
 
-**Radar.Init** (`Radar\Init.cs`): Main initialization hub that:
+**Radar.Init** ([Radar\Init.cs](Radar/Init.cs)): Main initialization hub
 - Loads JSON configuration files (`jsons/indexes.json`, `jsons/offsets.json`, `jsons/clusters.json`)
 - Loads XML game data (`ao-bin-dumps/items.xml`, `harvestables.xml`, `mobs.xml`)
 - Creates all handler instances (LocalPlayerHandler, PlayersHandler, HarvestablesHandler, MobsHandler, DungeonsHandler, etc.)
 - Builds the Photon packet receiver with all event/request/response handlers
-- Spawns threads for packet sniffing, global timer, and three overlays (radar, items, info)
+- Spawns threads for packet sniffing and three overlay renderers (radar, items, info)
 
-**PacketDeviceSelector** (`Radar\Packets\Sniffer\PacketDeviceSelector.cs`): Network capture using SharpPcap/npcap to intercept Albion Online traffic locally. Used in "local" mode.
+**PacketDeviceSelector** ([Radar\Packets\Sniffer\PacketDeviceSelector.cs](Radar/Packets/Sniffer/PacketDeviceSelector.cs)): Network packet capture
+- Uses SharpPcap/npcap to intercept Albion Online UDP traffic
+- Listens on configurable game port (default 5056, can be 5050)
+- Extracts UDP payload and forwards to PhotonReceiver
 
-**NetworkPacketReceiver** (`Radar\Packets\Sniffer\NetworkPacketReceiver.cs`): TCP server that receives packets from remote packet sender (e.g., Ubuntu VM). Used in "remote" mode. This replaces the need for Cryptonite and hosts file modification.
+**NetworkConfig** ([Radar\Packets\Sniffer\NetworkConfig.cs](Radar/Packets/Sniffer/NetworkConfig.cs)): Simple port configuration
+- Loads from `network_config.json`
+- Only configures `game_port` (5056 or 5050 depending on region)
+- Auto-creates default config if missing
 
-**NetworkConfig** (`Radar\Packets\Sniffer\NetworkConfig.cs`): Configuration system for packet capture mode selection and network settings. Loads from `network_config.json`.
-
-**Photon Protocol**: Uses Albion.Network and PhotonPackageParser libraries to decode Photon protocol packets. Packet handlers are in `Radar\Packets\Handlers\` and follow naming pattern `[EventName]Event.cs` + `[EventName]EventHandler.cs`.
+**Photon Protocol**: Uses Albion.Network (v5.0.1) and PhotonPackageParser (v4.1.0) libraries to decode Photon protocol packets. Packet handlers follow naming pattern `[EventName]Event.cs` + `[EventName]EventHandler.cs` in `Radar\Packets\Handlers\`.
 
 ### Handler System
 
-Each game object type has a dedicated handler class:
-- **LocalPlayerHandler**: Tracks the player's position, cluster (zone), and uses cluster data for map rendering
-- **PlayersHandler**: Manages other players' positions, equipment, health, flagging status, faction state
-- **HarvestablesHandler**: Tracks resource nodes (trees, ore, fiber, etc.) with tier and enchantment info
-- **MobsHandler**: Tracks world mobs, corrupt mobs, mist mobs, drones, event mobs
+Each game object type has a dedicated handler class that processes network events:
+
+- **LocalPlayerHandler**: Tracks player position, cluster (zone), mist dungeon state, and cluster metadata for map rendering
+- **PlayersHandler**: Manages other players' positions, equipment, health, flagging status, faction, mounts, KeySync data
+- **HarvestablesHandler**: Tracks resource nodes (trees, ore, fiber, hide, stone, fish) with tier and enchantment info
+- **MobsHandler**: Tracks world mobs, corrupt mobs, mist mobs (wisps, spiders, dragons, griffins), drones, event mobs
 - **DungeonsHandler**: Tracks dungeon entrances with type and rarity
 - **FishNodesHandler**: Tracks fishing zones
 - **GatedWispsHandler**: Tracks mist wisps and portals
 - **LootChestsHandler**: Tracks treasure chests
 
-Handlers receive parsed packet data and maintain collections of active game objects, cleaning up stale entries via GlobalTimer.
+Handlers process packets from ReceiverBuilder, update game object collections, and expose data to overlay renderers. GlobalTimer (currently disabled) was used for periodic cleanup of stale objects.
 
 ### Overlay Rendering
 
-Three separate overlay threads use GameOverlay library (SharpDX/Direct2D):
+Three independent overlay threads use GameOverlay library (SharpDX/Direct2D) for hardware-accelerated rendering:
 
-1. **RadarOverlay** (`Radar\Drawing\Overlays\RadarOverlay.cs`): Main map overlay showing all objects
-   - Uses "Drawer" classes for each object type (`PlayersDrawerer`, `HarvestablesDrawerer`, `MobsDrawerer`, etc.)
-   - Settings controlled via `RadarOverlaySettings` and `RadarOverlayBrushesDictionary`
+1. **RadarOverlay** ([Radar\Drawing\Overlays\RadarOverlay.cs](Radar/Drawing/Overlays/RadarOverlay.cs)): Main map overlay (30 FPS)
+   - Uses dedicated "Drawer" classes: `PlayersDrawerer`, `HarvestablesDrawerer`, `MobsDrawerer`, `DungeonsDrawerer`, `FishNodesDrawerer`, `GatedWispsDrawerer`, `LootChestsDrawerer`, `HudDrawerer`
+   - Settings managed by `RadarOverlaySettings` and `RadarOverlayBrushesDictionary`
+   - Fullscreen transparent overlay
 
-2. **ItemsOverlay** (`Radar\Drawing\Overlays\ItemsOverlay.cs`): Shows player equipment/inventory
-   - Uses item images from `ITEMS\` directory
+2. **ItemsOverlay** ([Radar\Drawing\Overlays\ItemsOverlay.cs](Radar/Drawing/Overlays/ItemsOverlay.cs)): Player equipment/inventory display
+   - Loads item images from `ITEMS\` directory
    - Controlled by `ItemsOverlaySettings` and `ItemsOverlayBrushesDictionary`
 
-3. **InfoOverlay** (`Radar\Drawing\Overlays\InfoOverlay.cs`): Displays cluster/zone information
+3. **InfoOverlay** ([Radar\Drawing\Overlays\InfoOverlay.cs](Radar/Drawing/Overlays/InfoOverlay.cs)): Cluster/zone information HUD
+   - Displays current zone, mist dungeon info, etc.
 
 ### Configuration System
 
-**ConfigHandler** (`Settings\ConfigHandler.cs`): Singleton that manages `.cfg` files (JSON format)
-- Loads/saves settings for ESP, resources, mobs, dungeons, styling, addons
-- Creates default configs on first run (Config 1.cfg, Config 2.cfg, Config 3.cfg)
-- Settings include: player ESP toggles, resource filters, mob filters, radar styling, overlay positions
+**ConfigHandler** ([Settings\ConfigHandler.cs](Settings/ConfigHandler.cs)): Singleton configuration manager
+- Manages `.cfg` files in JSON format (Config 1.cfg, Config 2.cfg, Config 3.cfg)
+- Auto-creates default configs on first run
+- Settings categories:
+  - Player ESP toggles (show players, equipment, health, distance, etc.)
+  - Resource filters (tier, enchantment, type)
+  - Mob filters (corrupt, mist, world, event)
+  - Dungeon filters
+  - Radar styling (zoom, colors, position, fonts)
+  - Overlay positions and visibility
+  - Language (en-US, ru-RU)
+  - Hotkeys (Toggle Menu: INSERT, Toggle Radar: END, Close: HOME)
 
-**MainWindow** (`MainWindow.xaml.cs`): WPF UI with navigation between configuration pages
+**MainWindow** ([MainWindow.xaml.cs](MainWindow.xaml.cs)): WPF UI with page navigation
 - Pages: PlayersPage, HarvestablePage, MobsPage, DungeonsPage, StylePage, MapPage, ItemsPage, MistsPage, SupportPage, ConfigPage
+- Uses Wpf.Ui library for modern UI components
 
 ### Data Models
 
-**XML Data Loading**:
-- `HarvestableData.Load()` - Parses harvestables.xml for resource node data
-- `ItemData.Load()` - Parses items.xml for equipment/item info
-- `MobData.Load()` - Parses mobs.xml for mob type data
+**XML Data Loading** (from ao-bin-dumps):
+- `HarvestableData.Load("ao-bin-dumps/harvestables.xml")` - Resource node definitions
+- `ItemData.Load("ao-bin-dumps/items.xml")` - Equipment/item metadata
+- `MobData.Load("ao-bin-dumps/mobs.xml")` - Mob type definitions
 
 **JSON Packet Configuration**:
-- `jsons/indexes.json` - Maps packet event names to numeric IDs (e.g., "NewCharacter": 29)
-- `jsons/offsets.json` - Contains byte offsets for parsing packet data structures
-- `jsons/clusters.json` - Map/cluster metadata
+- `jsons/indexes.json` - Maps packet event names to numeric IDs (e.g., "NewCharacter": 29, "Leave": 46)
+- `jsons/offsets.json` - Byte offsets for parsing packet data structures
+- `jsons/clusters.json` - Map/cluster metadata (display names, colors, types)
 
 ## Key Implementation Details
 
 ### Packet Flow
 
-**Local Mode (npcap):**
-1. PacketDeviceSelector captures raw network packets via npcap
-2. SharpPcap extracts UDP payload on configured game_port
-3. PhotonPackageParser decodes Photon protocol layer
-4. Albion.Network maps to Albion-specific packet types
-5. ReceiverBuilder dispatches to appropriate handler (Event/Request/Response)
-6. Handler updates game object collections
-7. Overlay threads read from collections and render at ~60 FPS
-
-**Remote Mode (TCP receiver):**
-1. Ubuntu VM sender captures packets using scapy on UDP port 5050
-2. Sender forwards packets via TCP to NetworkPacketReceiver
-3. NetworkPacketReceiver receives packet data on configured remote_port
-4. Passes packet payload to IPhotonReceiver.ReceivePacket()
-5. PhotonPackageParser decodes Photon protocol layer
-6. Albion.Network maps to Albion-specific packet types
-7. ReceiverBuilder dispatches to appropriate handler (Event/Request/Response)
-8. Handler updates game object collections
-9. Overlay threads read from collections and render at ~60 FPS
+1. **PacketDeviceSelector** captures raw UDP packets on configured `game_port` via npcap
+2. **SharpPcap** extracts UDP payload from captured packets
+3. **PhotonPackageParser** decodes Photon protocol layer (handles fragmentation, reassembly)
+4. **Albion.Network** (IPhotonReceiver) maps to Albion-specific packet types
+5. **ReceiverBuilder** dispatches to registered handlers based on packet type (Event/Request/Response)
+6. **Handlers** extract game object data from Dictionary<byte, object> parameters and update collections
+7. **Overlay threads** read from handler collections and render at 30 FPS
 
 ### Network Configuration
 
-Configuration is loaded from `network_config.json` at startup:
+Configuration is loaded from `network_config.json`:
 
 ```json
 {
-  "mode": "local",        // or "remote"
-  "remote_port": 9999,    // TCP port for remote mode
-  "game_port": 5050       // UDP port for game traffic
+  "game_port": 5056
 }
 ```
 
-Mode selection in `Init.cs`:
-- **local**: Uses PacketDeviceSelector with npcap
-- **remote**: Uses NetworkPacketReceiver with TCP server
+**Port Configuration:**
+- Port 5056: Default (most common)
+- Port 5050: Alternative in some setups
+- Use Wireshark to determine which port your game client uses
+- Edit `network_config.json` and restart application to change port
 
 ### Threading Model
-- UI Thread: WPF MainWindow and configuration pages
-- Packet Capture Thread:
-  - Local mode: PacketDeviceSelector with SharpPcap event callbacks
-  - Remote mode: NetworkPacketReceiver with async TCP server (Task-based)
-- GlobalTimer Thread: Periodic cleanup of expired game objects
-- Three Overlay Threads: Independent rendering loops with high-precision timers
+- **UI Thread**: WPF MainWindow and configuration pages (STA thread)
+- **Packet Capture Thread**: PacketDeviceSelector with SharpPcap event callbacks
+- **GlobalTimer Thread**: Currently disabled (line 194 in Init.cs is commented out)
+  - Was used for: position syncing, health regeneration, stale object cleanup
+- **Three Overlay Threads**: Independent rendering loops with PrecisionTimer (high-precision timing)
+  - radarOverlay: Main map rendering
+  - itemsOverlay: Equipment display
+  - infoOverlay: Zone info HUD
 
 ### Coordinates and Positioning
-- Albion uses 2D float coordinates
+- Albion uses 2D float coordinates (Vector2)
 - LocalPlayer position is reference point for radar centering
 - Zoom level and offset settings in StylePage control radar view
 - Each drawer calculates screen position from world position relative to local player
+- Position syncing between network updates uses interpolation (when GlobalTimer is enabled)
 
 ## Common Gotchas
 
 - **Missing ITEMS directory**: Application checks for `ITEMS\T1_TRASH.png` at startup and shows fatal error if missing
-- **Missing ao-bin-dumps**: XML loading failures will cause startup crash with diagnostic message
-- **Packet indexes/offsets**: These JSON files must match current Albion Online version; outdated values cause parsing errors
+- **Missing ao-bin-dumps**: XML loading failures cause startup crash with diagnostic message from Diagnostics.DoVital()
+- **Packet indexes/offsets**: JSON files must match current Albion Online version; outdated values cause parsing errors or no data
 - **Thread safety**: Handlers use concurrent collections or locks; be careful when adding new shared state
-- **AllowUnsafeBlocks**: Project uses unsafe code for performance-critical operations
-- **Network mode configuration**: Must have valid `network_config.json` - if missing, defaults are created automatically
-- **Port conflicts**: Remote mode TCP port (default 9999) must not be in use by other applications
-- **Sender compatibility**: packet_sender.py must use matching game_port (default 5050)
+- **AllowUnsafeBlocks**: Project uses unsafe code for performance-critical operations (enabled in all configurations)
+- **Network config**: If `network_config.json` is missing, default config with port 5056 is auto-created
+- **Wrong port**: If no packets are captured, check which port your game uses with Wireshark and update `game_port`
+- **Npcap not installed**: Application will show error message and exit if npcap is not available
+- **GlobalTimer disabled**: Position syncing and object cleanup are currently disabled (Init.cs:194)
 
 ## Development Notes
 
-### Adding New Packet Capture Methods
+### Adding New Event Handlers
 
-To add a new packet capture method:
+To add support for a new packet type:
 
-1. Create new class implementing packet forwarding to `IPhotonReceiver`
-2. Add configuration option to `NetworkConfig.cs`
-3. Update `Init.cs` to instantiate based on config mode
-4. Update `Init.Start()` to start appropriate capture method
+1. Create event model class in `Radar\Packets\Handlers\` (e.g., `NewFooEvent.cs`)
+2. Create handler class implementing `EventHandler<T>` (e.g., `NewFooEventHandler.cs`)
+3. Register handler in `Init.cs` ReceiverBuilder section:
+   ```csharp
+   builder.AddEventHandler(new NewFooEventHandler(fooHandler));
+   ```
+4. Add packet ID mapping to `jsons/indexes.json` if needed
+5. Add byte offset definitions to `jsons/offsets.json` if needed
 
-### Testing Different Modes
+### Adding New Game Object Types
 
-**Test Local Mode:**
-```json
-{ "mode": "local", "remote_port": 9999, "game_port": 5050 }
-```
-Requires npcap and game running on same PC.
+1. Create game object class in `Radar\GameObjects\{Type}\` (e.g., `Foo.cs`)
+2. Create handler class (e.g., `FooHandler.cs`) with collection management
+3. Create drawer class in `Radar\Drawing\Drawers\` (e.g., `FooDrawerer.cs`)
+4. Register handler in `Init.cs` constructor
+5. Add drawer to `RadarOverlay.cs` constructor and DrawAsync() method
+6. Add configuration options to `Config.cs` and appropriate UI page
 
-**Test Remote Mode:**
-```json
-{ "mode": "remote", "remote_port": 9999, "game_port": 5050 }
-```
-Requires sender running on separate device/VM.
+### Debugging Packet Capture
 
-### Debugging Packet Flow
-
-Add logging in NetworkPacketReceiver.cs to see packet reception:
+Enable debug output in Init.cs (lines 97-98):
 ```csharp
-Console.WriteLine($"[DEBUG] Received {packetData.Length} bytes");
+#if DEBUG
+builder.AddHandler(new DebugHandler());
+#endif
 ```
 
-Add logging in sender to see packet capture:
-```python
-logger.setLevel(logging.DEBUG)
+Use `DebugAllEventsHandler` to log all packet types:
+```csharp
+builder.AddHandler(new DebugAllEventsHandler());
 ```
 
-### Port Configuration
+### KeySync Brute-Force (Development)
 
-Game uses different ports depending on region:
-- Port 5050: Most common (used by default)
-- Port 5056: Alternative in some setups
-- Check actual traffic with Wireshark to confirm
+Lines 131-137 in Init.cs contain commented-out code for brute-forcing KeySync event IDs. This is used when packet structure changes in new game versions:
 
-If packets not captured, change `game_port` in config and sender filter.
+```csharp
+// for (int i = 500; i <= 700; i++)
+// {
+//     builder.AddEventHandler(new BruteForceKeySyncHandler(playersHandler, i));
+// }
+```
+
+### Project Naming
+
+- Assembly name: `VRise` (namespace: `VRise`)
+- Previous name: DEATHEYE (still used in solution file name)
+- Recent rename in commit 3424cf8
+
+### Resource Icons
+
+Images in `Design\Images\`:
+- `Mobs\Corrupt\` - Corrupt mob icons (GLUE, HOOK, KNOCKBACK, LAVA, SILENCE)
+- `Mobs\Mist\` - Mist mob icons (CRYSTALSPIDER, DRAGON, GRIFFIN, SPIDER, WISP, MIST_PORTAL)
+- `Mobs\Other\` - Special icons (EVENT, TREASURE, DRONE, CHEST)
+- `Resources\` - Resource icons (fiber, hide, ore, rock, wood)
+
+Item images in `ITEMS\` directory use naming pattern: `{ItemID}.png` (e.g., `T1_TRASH.png`, `T8_HEAD_PLATE_HELL@3.png`)
+
+### Language Support
+
+Supports English (en-US) and Russian (ru-RU) via resource dictionaries:
+- `Design\Lang\lang.xaml` - English (default)
+- `Design\Lang\lang.ru-RU.xaml` - Russian
+
+## Recent Bug Fixes
+
+### FormatException in Config Loading
+
+**Issue**: Application crashed on startup with `System.FormatException` when trying to convert color strings in `StyleSettings` array to integers.
+
+**Fix**: Added `ConfigHandler.SafeConvertToInt32()` helper method that safely handles:
+- Mixed type arrays (strings, ints, longs, doubles)
+- Color code strings (returns default value instead of throwing)
+- Null values
+
+Updated all files using `Convert.ToInt32()` on config values to use the safe version.
+
+### Player Position Shows (0.00, 0.00)
+
+**Issue**: Player positions displayed as `(0.00, 0.00)` even though player data was received correctly.
+
+**Cause**: `PlayersHandler.UpdatePlayerPosition()` was not using the `Decrypt()` method to decrypt position bytes with XorCode.
+
+**Fix**: Modified the method to:
+1. Call `Decrypt(positionBytes)` to decrypt coordinates using XorCode
+2. Add diagnostic warnings when XorCode is NULL or invalid
+3. Output raw bytes when position is still (0.00, 0.00) for debugging
+
+**KeySync Troubleshooting**: If positions are still (0.00, 0.00):
+1. Ensure KeySync event is triggered (switch maps/zones in game)
+2. Check console for `[KeySync] XorCode received!` message
+3. If KeySync is NULL, event ID 593 may have changed - use brute-force search in Init.cs lines 131-137
+4. See [POSITION_DECRYPTION_FIX.md](POSITION_DECRYPTION_FIX.md) and [FIXES_SUMMARY_ZH.md](FIXES_SUMMARY_ZH.md) for detailed troubleshooting

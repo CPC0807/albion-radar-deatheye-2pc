@@ -25,14 +25,14 @@ namespace VRise.Pages
                 CorruptSwitch.IsChecked = configHandler.config.CorruptedDungeon;
                 GroupSwitch.IsChecked = configHandler.config.GroupDungeon;
                 HellSwitch.IsChecked = configHandler.config.HellDungeon;
-                DungeonsSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.DungeonsDotSize), 4, 16);
+                DungeonsSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.DungeonsDotSize), 4, 16);
 
                 FlameSpinnerSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedTraps[0]);
                 LavaThrowerSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedTraps[1]);
                 BombThrowerSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedTraps[2]);
                 SpikesSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedTraps[3]);
 
-                CorruptedTrapsSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.CorruptedTraps[4]), 4, 16);
+                CorruptedTrapsSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.CorruptedTraps[4]), 4, 16);
 
 
                 HookerSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedMobs[0]);
@@ -41,7 +41,7 @@ namespace VRise.Pages
                 GlueBatSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedMobs[3]);
                 KnockBackBatSwitch.IsChecked = Convert.ToBoolean(configHandler.config.CorruptedMobs[4]);
 
-                CorruptedSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.CorruptedMobs[5]), 4, 16);
+                CorruptedSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.CorruptedMobs[5]), 4, 16);
 
             }
             catch

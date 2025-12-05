@@ -179,7 +179,7 @@ namespace VRise.Radar.Drawers
 
             string drawText = string.Empty;
 
-            switch (Convert.ToInt32(settings[1]))
+            switch (ConfigHandler.SafeConvertToInt32(settings[1]))
             {
                 case 1://STAR
                     drawText = "N";
@@ -266,7 +266,7 @@ namespace VRise.Radar.Drawers
                 }
 
                 //HEALTH INDICATOR
-                switch (Convert.ToInt32(settings[16]))
+                switch (ConfigHandler.SafeConvertToInt32(settings[16]))
                 {
                     case 2:
                         Additions.DrawTextCentered(gfx, brushesDictionary._fonts["Main"], brushesDictionary._players["HealthColor"], pos.X, pos.Y + Convert.ToSingle(settings[4]) / 2 + 1f, player.Health.strPercent);

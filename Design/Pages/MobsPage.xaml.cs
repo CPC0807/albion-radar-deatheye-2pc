@@ -25,39 +25,39 @@ namespace VRise.Pages
 
                 WorldMobsSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[0]);
                 OnlyProckedSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[1]);
-                WorldSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.WorldMobs[2]), 4, 16);
+                WorldSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.WorldMobs[2]), 4, 16);
 
                 #endregion
 
                 #region DRONES
 
                 DronesSwitch.IsChecked = Convert.ToBoolean(configHandler.config.DroneMobs[0]);
-                DronesSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.DroneMobs[1]), 4, 16);
+                DronesSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.DroneMobs[1]), 4, 16);
 
                 #endregion
 
                 #region MIST MOBS
 
                 WispsSwitch.IsChecked = Convert.ToBoolean(configHandler.config.MistWisps[0]);
-                MistsSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.MistWisps[1]), 4, 16);
+                MistsSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.MistWisps[1]), 4, 16);
                 WispsInGateSwitch.IsChecked = Convert.ToBoolean(configHandler.config.MistWisps[2]);
 
                 MistBossSwitch.IsChecked = Convert.ToBoolean(configHandler.config.MistMobs[0]);
-                MistsBossSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.MistMobs[1]), 4, 16);
+                MistsBossSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.MistMobs[1]), 4, 16);
 
                 #endregion
 
                 #region FISH NODES
 
                 FishSwitch.IsChecked = Convert.ToBoolean(configHandler.config.FishNodes[0]);
-                FishSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.FishNodes[1]), 4, 16);
+                FishSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.FishNodes[1]), 4, 16);
 
                 #endregion
 
                 #region TREASURES
 
                 TreasureSwitch.IsChecked = Convert.ToBoolean(configHandler.config.HiddenTreasures[0]);
-                TreasureSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.HiddenTreasures[1]), 4, 16);
+                TreasureSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.HiddenTreasures[1]), 4, 16);
                 WorldChestSwitch.IsChecked = Convert.ToBoolean(configHandler.config.HiddenTreasures[2]);
 
                 #endregion
@@ -65,7 +65,7 @@ namespace VRise.Pages
                 #region EVENT MOBS
 
                 EventSwitch.IsChecked = Convert.ToBoolean(configHandler.config.EventMobs[0]);
-                EventSizeSlider.Value = ValidateValue(Convert.ToInt32(configHandler.config.EventMobs[1]), 4, 16);
+                EventSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.EventMobs[1]), 4, 16);
 
                 #endregion
             }

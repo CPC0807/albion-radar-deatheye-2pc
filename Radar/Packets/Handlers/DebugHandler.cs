@@ -54,7 +54,27 @@ namespace VRise.Radar.Packets.Handlers
             {
                 if (@event.Parameters.TryGetValue(252, out var code))
                 {
-                    int eventCode = Convert.ToInt32(code);
+                    int eventCode;
+                    try
+                    {
+                        eventCode = Convert.ToInt32(code);
+                    }
+                    catch (FormatException ex)
+                    {
+                        // Handle case where code is not a simple numeric type
+                        Console.WriteLine($"[DebugHandler] FormatException - Event parameter 252 has unexpected type: {code?.GetType().Name ?? "null"}, Value: {code}");
+                        return Task.CompletedTask;
+                    }
+                    catch (InvalidCastException ex)
+                    {
+                        Console.WriteLine($"[DebugHandler] InvalidCastException - Event parameter 252 type: {code?.GetType().Name ?? "null"}, Value: {code}");
+                        return Task.CompletedTask;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[DebugHandler] Unexpected exception: {ex.GetType().Name} - {ex.Message}");
+                        return Task.CompletedTask;
+                    }
 
                     // 當切換地圖時，詳細記錄所有事件的參數結構
                     if (!loggedEvents.Contains(eventCode))

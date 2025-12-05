@@ -127,15 +127,6 @@ namespace VRise.Radar
             builder.AddEventHandler(new NewLootChestEventHandler(lootChestsHandler));
             builder.AddEventHandler(new KeySyncEventHandler(playersHandler));
 
-            // #if DEBUG
-            // 暴力搜索 KeySync 事件ID (500-700)
-            Console.WriteLine("[BruteForce] Registering KeySync scanners for event IDs 500-700...");
-            // for (int i = 500; i <= 700; i++)
-            // {
-            //     builder.AddEventHandler(new BruteForceKeySyncHandler(playersHandler, i));
-            // }
-            // #endif
-
             photonReceiver = builder.Build();
 
             #endregion
