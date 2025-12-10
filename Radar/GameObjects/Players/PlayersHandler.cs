@@ -105,9 +105,9 @@ namespace VRise.Radar.GameObjects.Players
 
                 playersList.TryAdd(id, new Player(id, name, guild, alliance, position, health, faction, LoadEquipment(equipments), spells));
 
-                // Debug: 輸出新玩家加入信息（可以在測試後移除）
+                // Debug: 輸出新玩家加入信息（已註解避免控制台太亂）
                 #if DEBUG
-                Console.WriteLine($"[PlayerAdd] ID:{id} Name:{name} Guild:{guild} Pos:({position.X:F2},{position.Y:F2}) Faction:{faction}");
+                // Console.WriteLine($"[PlayerAdd] ID:{id} Name:{name} Guild:{guild} Pos:({position.X:F2},{position.Y:F2}) Faction:{faction}");
                 #endif
             }
         }
@@ -226,16 +226,16 @@ namespace VRise.Radar.GameObjects.Players
                     Console.WriteLine($"[UpdatePlayerPosition] WARNING: newPositionBytes length is {newPositionBytes.Length} (expected 8)");
                 }
 
-                // Debug: 診斷 XorCode 狀態
-                if (XorCode == null)
-                {
-                    Console.WriteLine($"[XorCode] WARNING: XorCode is NULL! Cannot decrypt positions.");
-                    Console.WriteLine($"[XorCode] Make sure KeySync event (ID 593) is triggered when entering a new zone.");
-                }
-                else if (XorCode.Length != 8)
-                {
-                    Console.WriteLine($"[XorCode] WARNING: Invalid XorCode length: {XorCode.Length} (expected 8)");
-                }
+                // Debug: 診斷 XorCode 狀態 (已註解避免控制台太亂)
+                // if (XorCode == null)
+                // {
+                //     Console.WriteLine($"[XorCode] WARNING: XorCode is NULL! Cannot decrypt positions.");
+                //     Console.WriteLine($"[XorCode] Make sure KeySync event (ID 593) is triggered when entering a new zone.");
+                // }
+                // else if (XorCode.Length != 8)
+                // {
+                //     Console.WriteLine($"[XorCode] WARNING: Invalid XorCode length: {XorCode.Length} (expected 8)");
+                // }
                 #endif
 
                 // 使用 Decrypt 方法解密座標
@@ -268,28 +268,28 @@ namespace VRise.Radar.GameObjects.Players
                 Vector2 newPosition = new Vector2(newPos[0], newPos[1]);
 
                 #if DEBUG
-                // 檢測異常的座標值（可能表示解密失敗）
+                // 檢測異常的座標值（已註解避免控制台太亂）
                 bool isAbnormal = false;
                 if (Math.Abs(position.X) > 100000 || Math.Abs(position.Y) > 100000)
                 {
                     isAbnormal = true;
-                    Console.WriteLine($"\n========== [ABNORMAL POSITION DETECTED!] ==========");
-                    Console.WriteLine($"  Player ID: {id}");
-                    Console.WriteLine($"  Decrypted Position: ({position.X:F2}, {position.Y:F2})");
-                    Console.WriteLine($"  Raw positionBytes: {BitConverter.ToString(positionBytes)}");
-                    Console.WriteLine($"  XorCode: {(XorCode != null ? BitConverter.ToString(XorCode) : "NULL")}");
-                    Console.WriteLine($"  XorCode Length: {XorCode?.Length ?? 0}");
-
-                    // 嘗試不解密直接讀取
-                    float directX = BitConverter.ToSingle(positionBytes, 0);
-                    float directY = BitConverter.ToSingle(positionBytes, 4);
-                    Console.WriteLine($"  Direct read (X at 0, Y at 4): ({directX:F2}, {directY:F2})");
-
-                    // 嘗試反向讀取
-                    float reverseX = BitConverter.ToSingle(positionBytes, 4);
-                    float reverseY = BitConverter.ToSingle(positionBytes, 0);
-                    Console.WriteLine($"  Reverse read (X at 4, Y at 0): ({reverseX:F2}, {reverseY:F2})");
-                    Console.WriteLine($"==================================================\n");
+                    // Console.WriteLine($"\n========== [ABNORMAL POSITION DETECTED!] ==========");
+                    // Console.WriteLine($"  Player ID: {id}");
+                    // Console.WriteLine($"  Decrypted Position: ({position.X:F2}, {position.Y:F2})");
+                    // Console.WriteLine($"  Raw positionBytes: {BitConverter.ToString(positionBytes)}");
+                    // Console.WriteLine($"  XorCode: {(XorCode != null ? BitConverter.ToString(XorCode) : "NULL")}");
+                    // Console.WriteLine($"  XorCode Length: {XorCode?.Length ?? 0}");
+                    //
+                    // // 嘗試不解密直接讀取
+                    // float directX = BitConverter.ToSingle(positionBytes, 0);
+                    // float directY = BitConverter.ToSingle(positionBytes, 4);
+                    // Console.WriteLine($"  Direct read (X at 0, Y at 4): ({directX:F2}, {directY:F2})");
+                    //
+                    // // 嘗試反向讀取
+                    // float reverseX = BitConverter.ToSingle(positionBytes, 4);
+                    // float reverseY = BitConverter.ToSingle(positionBytes, 0);
+                    // Console.WriteLine($"  Reverse read (X at 4, Y at 0): ({reverseX:F2}, {reverseY:F2})");
+                    // Console.WriteLine($"==================================================\n");
                 }
                 #endif
 
@@ -302,18 +302,18 @@ namespace VRise.Radar.GameObjects.Players
                     player.NewPosition = newPosition;
 
                     #if DEBUG
-                    // Debug: 只輸出正常的位置信息
-                    if (!isAbnormal)
-                    {
-                        Console.WriteLine($"[PlayerPos] ID:{id} Name:{player.Name} Pos:({position.X:F2},{position.Y:F2}) NewPos:({newPosition.X:F2},{newPosition.Y:F2}) Speed:{speed:F2}");
-                    }
-
-                    // 如果位置是 (0.00, 0.00)，輸出原始數據
-                    if (position.X == 0.0f && position.Y == 0.0f && !isAbnormal)
-                    {
-                        Console.WriteLine($"[DEBUG] Position is (0,0) - Raw bytes: {BitConverter.ToString(positionBytes)}");
-                        Console.WriteLine($"[DEBUG] XorCode: {(XorCode != null ? BitConverter.ToString(XorCode) : "NULL")}");
-                    }
+                    // Debug: 位置信息（已註解避免控制台太亂）
+                    // if (!isAbnormal)
+                    // {
+                    //     Console.WriteLine($"[PlayerPos] ID:{id} Name:{player.Name} Pos:({position.X:F2},{position.Y:F2}) NewPos:({newPosition.X:F2},{newPosition.Y:F2}) Speed:{speed:F2}");
+                    // }
+                    //
+                    // // 如果位置是 (0.00, 0.00)，輸出原始數據
+                    // if (position.X == 0.0f && position.Y == 0.0f && !isAbnormal)
+                    // {
+                    //     Console.WriteLine($"[DEBUG] Position is (0,0) - Raw bytes: {BitConverter.ToString(positionBytes)}");
+                    //     Console.WriteLine($"[DEBUG] XorCode: {(XorCode != null ? BitConverter.ToString(XorCode) : "NULL")}");
+                    // }
                     #endif
                 }
             }

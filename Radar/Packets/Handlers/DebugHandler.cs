@@ -32,7 +32,7 @@ namespace VRise.Radar.Packets.Handlers
             {
                 if (response.Parameters.TryGetValue(253, out var code))
                 {
-                    Console.WriteLine("Response: " + code);
+                    // Console.WriteLine("Response: " + code); // 註解避免控制台太亂
                 }
                 else
                 {
@@ -43,7 +43,7 @@ namespace VRise.Radar.Packets.Handlers
             {
                 if (request.Parameters.TryGetValue(253, out var code))
                 {
-                    Console.WriteLine("Request: " + code);
+                    // Console.WriteLine("Request: " + code); // 註解避免控制台太亂
                 }
                 else
                 {
@@ -85,7 +85,7 @@ namespace VRise.Radar.Packets.Handlers
                         if (eventLogFile != null)
                         {
                             eventLogFile.WriteLine($"\n[EventStructure] Event {eventCode}:");
-                            Console.WriteLine($"[EventStructure] Event {eventCode} logged");
+                            // Console.WriteLine($"[EventStructure] Event {eventCode} logged"); // 註解避免控制台太亂
 
                             foreach (var kvp in @event.Parameters)
                             {
@@ -105,7 +105,7 @@ namespace VRise.Radar.Packets.Handlers
 
                                         if (!string.IsNullOrEmpty(marker))
                                         {
-                                            Console.WriteLine($"  {marker} Event {eventCode} Key {kvp.Key} - byte[{byteArray.Length}]");
+                                            // Console.WriteLine($"  {marker} Event {eventCode} Key {kvp.Key} - byte[{byteArray.Length}]"); // 註解避免控制台太亂
                                         }
                                     }
                                 }

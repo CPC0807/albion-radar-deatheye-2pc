@@ -18,14 +18,15 @@ namespace VRise.Radar.Packets.Handlers
             playersHandler.XorCode = value.Code;
 
             #if DEBUG
-            if (value.Code != null)
-            {
-                System.Console.WriteLine($"[KeySync] XorCode received! Length:{value.Code.Length} Bytes:{System.BitConverter.ToString(value.Code)}");
-            }
-            else
-            {
-                System.Console.WriteLine($"[KeySync] XorCode is NULL!");
-            }
+            // KeySync 訊息（已註解避免控制台太亂）
+            // if (value.Code != null)
+            // {
+            //     System.Console.WriteLine($"[KeySync] XorCode received! Length:{value.Code.Length} Bytes:{System.BitConverter.ToString(value.Code)}");
+            // }
+            // else
+            // {
+            //     System.Console.WriteLine($"[KeySync] XorCode is NULL!");
+            // }
             #endif
 
             return Task.CompletedTask;
