@@ -12,10 +12,21 @@ namespace VRise.Radar.Packets.Handlers
         
         public MoveRequestOperation(Dictionary<byte, object> parameters) : base(parameters)
         {
-            Position = Additions.fromFArray((float[])parameters[offsets[0]]);
-            NewPosition = Additions.fromFArray((float[])parameters[offsets[1]]);
-            Speed = parameters.ContainsKey(offsets[2]) ? (float)parameters[offsets[2]] : 0f;
-            Time = DateTime.UtcNow;
+            // 安全的類型轉換，避免 InvalidCastException
+            try
+            {
+                Position = parameters[offsets[0]] is float[] pos ? Additions.fromFArray(pos) : Vector2.Zero;
+                NewPosition = parameters[offsets[1]] is float[] newPos ? Additions.fromFArray(newPos) : Vector2.Zero;
+                Speed = parameters.ContainsKey(offsets[2]) ? (float)parameters[offsets[2]] : 0f;
+                Time = DateTime.UtcNow;
+            }
+            catch (InvalidCastException)
+            {
+                Position = Vector2.Zero;
+                NewPosition = Vector2.Zero;
+                Speed = 0f;
+                Time = DateTime.UtcNow;
+            }
         }
 
         public Vector2 Position { get; }

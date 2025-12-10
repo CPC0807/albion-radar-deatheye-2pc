@@ -24,7 +24,28 @@ namespace VRise.Radar.Packets.Handlers
 
             Faction = (Faction)parameters[offsets[5]];
 
-            Position = Additions.fromFArray((float[])parameters[offsets[6]]);
+            // 安全的類型轉換，避免 InvalidCastException
+            try
+            {
+                if (parameters[offsets[6]] is float[] floatArray)
+                {
+                    Position = Additions.fromFArray(floatArray);
+                }
+                else
+                {
+                    Position = Vector2.Zero;
+                    #if DEBUG
+                    Console.WriteLine($"[JoinResponse] WARNING: Position parameter is {parameters[offsets[6]]?.GetType().Name ?? "null"}, expected float[]");
+                    #endif
+                }
+            }
+            catch (Exception ex)
+            {
+                Position = Vector2.Zero;
+                #if DEBUG
+                Console.WriteLine($"[JoinResponse] ERROR: {ex.Message}");
+                #endif
+            }
         }
 
         public int Id { get; }
