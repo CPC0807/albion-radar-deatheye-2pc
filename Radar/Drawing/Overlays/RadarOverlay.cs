@@ -88,7 +88,7 @@ namespace VRise.Radar.Drawing.Overlays
         {
             await brushesDictionary.UpdateColors();
             await hudDrawerer.DrawAsync();
-            
+
             await overlaySettings.PrepareDraw();
 
             await harvestablesDrawerer.DrawAsync();
@@ -97,7 +97,7 @@ namespace VRise.Radar.Drawing.Overlays
             await lootChestsDrawerer.DrawAsync();
             await fishNodesDrawerer.DrawAsync();
             await dungeonsDrawerer.DrawAsync();
-            await playersDrawerer.DrawAsync();
+            // await playersDrawerer.DrawAsync(); // 暫時隱藏其他玩家（座標錯誤）
 
             await overlaySettings.EndDraw();
         }
