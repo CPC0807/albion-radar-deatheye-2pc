@@ -21,8 +21,16 @@
                             <ui:ToggleSwitch x:Name="WorldMobsSwitch" HorizontalAlignment="Right" Checked="WorldMobsSwitch_Checked" Unchecked="WorldMobsSwitch_Checked"/>
                         </Grid>
                         <Grid Margin="0 10 0 0">
-                            <TextBlock Text="{DynamicResource OnlyProcked}" FontSize="16"/>
-                            <ui:ToggleSwitch x:Name="OnlyProckedSwitch" HorizontalAlignment="Right" Checked="OnlyProckedSwitch_Checked" Unchecked="OnlyProckedSwitch_Checked"/>
+                            <TextBlock Text="{DynamicResource ShowBoss}" FontSize="16"/>
+                            <ui:ToggleSwitch x:Name="ShowBossSwitch" HorizontalAlignment="Right" Checked="ShowBossSwitch_Checked" Unchecked="ShowBossSwitch_Checked"/>
+                        </Grid>
+                        <Grid Margin="0 10 0 0">
+                            <TextBlock Text="{DynamicResource ShowMiniBoss}" FontSize="16"/>
+                            <ui:ToggleSwitch x:Name="ShowMiniBossSwitch" HorizontalAlignment="Right" Checked="ShowMiniBossSwitch_Checked" Unchecked="ShowMiniBossSwitch_Checked"/>
+                        </Grid>
+                        <Grid Margin="0 10 0 0">
+                            <TextBlock Text="{DynamicResource ShowChampion}" FontSize="16"/>
+                            <ui:ToggleSwitch x:Name="ShowChampionSwitch" HorizontalAlignment="Right" Checked="ShowChampionSwitch_Checked" Unchecked="ShowChampionSwitch_Checked"/>
                         </Grid>
                         <Grid Margin="0 10 0 0">
                             <TextBlock Text="{DynamicResource DotSize}" FontSize="16"/>

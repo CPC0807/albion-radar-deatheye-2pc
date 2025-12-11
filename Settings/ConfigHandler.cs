@@ -184,7 +184,7 @@ namespace VRise.Settings
 
             #region MOBS
 
-            settingsJson.WorldMobs = new object[] { false, false, 4};
+            settingsJson.WorldMobs = new object[] { false, false, false, false, 4}; // [0]=Enable, [1]=Boss, [2]=MiniBoss, [3]=Champion, [4]=DotSize
             settingsJson.DroneMobs = new object[] { false, 4};
             settingsJson.MistMobs = new object[] { false, 4};
             settingsJson.FishNodes = new object[] { false, 4 };

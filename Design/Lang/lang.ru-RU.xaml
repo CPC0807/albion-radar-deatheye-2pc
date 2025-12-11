@@ -134,7 +134,9 @@
     <v:String x:Key="LavaThrower">Бросатель Лавы</v:String>
     <v:String x:Key="BombThrower">Бросатель Бомб</v:String>
     
-    <v:String x:Key="OnlyProcked">Только Прокнутые</v:String>
+    <v:String x:Key="ShowBoss">Показать Боссов</v:String>
+    <v:String x:Key="ShowMiniBoss">Показать Мини-Боссов</v:String>
+    <v:String x:Key="ShowChampion">Показать Чемпионов</v:String>
     
     <v:String x:Key="MistWisps">Виспы Мглы</v:String>
     <v:String x:Key="PortalWisps">Портальные Виспы</v:String>

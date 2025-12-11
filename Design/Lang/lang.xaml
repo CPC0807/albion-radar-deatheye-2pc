@@ -119,7 +119,9 @@
     
 
 
-    <v:String x:Key="OnlyProcked">Only Procked</v:String>
+    <v:String x:Key="ShowBoss">Show Boss</v:String>
+    <v:String x:Key="ShowMiniBoss">Show Mini Boss</v:String>
+    <v:String x:Key="ShowChampion">Show Champion</v:String>
 
     <v:String x:Key="MistWisps">Mist Wisps</v:String>
     <v:String x:Key="PortalWisps">Portal Wisps</v:String>

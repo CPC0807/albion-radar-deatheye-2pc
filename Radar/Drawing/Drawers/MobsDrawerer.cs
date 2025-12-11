@@ -112,14 +112,41 @@ namespace VRise.Radar.Drawers
 
                                 break;
 
-                            case "WORLD_PROCKED":
+                            case "WORLD_BOSS":
 
-                                if (Convert.ToBoolean(configHandler.config.WorldMobs[0]))
+                                if (Convert.ToBoolean(configHandler.config.WorldMobs[0]) && Convert.ToBoolean(configHandler.config.WorldMobs[1]))
                                 {
+                                    int rarity = Math.Min(Math.Max(m.MobInfo.Rarity, 0), 3); // 限制在 0-3 範圍
                                     gfx.DrawDotWithStringIcon(brushesDictionary._brushes["Black"],
-                                        brushesDictionary._proksColors[m.MobInfo.Rarity],
+                                        brushesDictionary._proksColors[rarity],
                                         brushesDictionary._brushes["Yellow"], pos, brushesDictionary._fonts["Main"],
-                                        "M", Convert.ToSingle(configHandler.config.WorldMobs[2]));
+                                        "B", Convert.ToSingle(configHandler.config.WorldMobs[4]));
+                                }
+
+                                break;
+
+                            case "WORLD_MINIBOSS":
+
+                                if (Convert.ToBoolean(configHandler.config.WorldMobs[0]) && Convert.ToBoolean(configHandler.config.WorldMobs[2]))
+                                {
+                                    int rarity = Math.Min(Math.Max(m.MobInfo.Rarity, 0), 3); // 限制在 0-3 範圍
+                                    gfx.DrawDotWithStringIcon(brushesDictionary._brushes["Black"],
+                                        brushesDictionary._proksColors[rarity],
+                                        brushesDictionary._brushes["Yellow"], pos, brushesDictionary._fonts["Main"],
+                                        "MB", Convert.ToSingle(configHandler.config.WorldMobs[4]));
+                                }
+
+                                break;
+
+                            case "WORLD_CHAMPION":
+
+                                if (Convert.ToBoolean(configHandler.config.WorldMobs[0]) && Convert.ToBoolean(configHandler.config.WorldMobs[3]))
+                                {
+                                    int rarity = Math.Min(Math.Max(m.MobInfo.Rarity, 0), 3); // 限制在 0-3 範圍
+                                    gfx.DrawDotWithStringIcon(brushesDictionary._brushes["Black"],
+                                        brushesDictionary._proksColors[rarity],
+                                        brushesDictionary._brushes["Yellow"], pos, brushesDictionary._fonts["Main"],
+                                        "C", Convert.ToSingle(configHandler.config.WorldMobs[4]));
                                 }
 
                                 break;
@@ -248,28 +275,20 @@ namespace VRise.Radar.Drawers
 
                                 break;
                             default:
-                                if (Convert.ToBoolean(configHandler.config.WorldMobs[0]) &&
-                                    !Convert.ToBoolean(configHandler.config.WorldMobs[1]))
+                                // NULL 類型（普通世界怪物）
+                                if (Convert.ToBoolean(configHandler.config.WorldMobs[0]))
                                 {
                                     gfx.DrawDotWithStringIcon(brushesDictionary._brushes["Black"],
                                         brushesDictionary._brushes["Gray"], brushesDictionary._brushes["Gray"], pos,
                                         brushesDictionary._fonts["Main"], "M",
-                                        Convert.ToSingle(configHandler.config.WorldMobs[2]));
+                                        Convert.ToSingle(configHandler.config.WorldMobs[4]));
                                 }
-                            
                                 break;
                         }
                     }
                     else
                     {
-                        if (Convert.ToBoolean(configHandler.config.WorldMobs[0]) &&
-                            !Convert.ToBoolean(configHandler.config.WorldMobs[1]))
-                        {
-                            gfx.DrawDotWithStringIcon(brushesDictionary._brushes["Black"],
-                                brushesDictionary._brushes["Gray"], brushesDictionary._brushes["Gray"], pos,
-                                brushesDictionary._fonts["Main"], "M",
-                                Convert.ToSingle(configHandler.config.WorldMobs[2]));
-                        }
+                        // m.MobInfo == null 的情況 - 不顯示
                     }
                 }
             }

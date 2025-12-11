@@ -139,8 +139,15 @@ namespace VRise.Radar.Dependencies.Mob
             if (e.UniqueName.Contains("AVALON_TREASURE_MINION"))
                 return "DRONE";
 
-            if (e.UniqueName.Contains("_CHAMPION") || e.UniqueName.Contains("_MINIBOSS") || e.UniqueName.Contains("_BOSS"))
-                return "WORLD_PROCKED";
+            // 注意：必須先檢查 _MINIBOSS，因為它包含 _BOSS
+            if (e.UniqueName.Contains("_MINIBOSS"))
+                return "WORLD_MINIBOSS";
+
+            if (e.UniqueName.Contains("_BOSS"))
+                return "WORLD_BOSS";
+
+            if (e.UniqueName.Contains("_CHAMPION"))
+                return "WORLD_CHAMPION";
 
             // TODO: other types
             // [0] = {string} "MIST_PORTAL"

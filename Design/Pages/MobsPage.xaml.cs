@@ -24,8 +24,10 @@ namespace VRise.Pages
                 #region WORLD MOBS
 
                 WorldMobsSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[0]);
-                OnlyProckedSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[1]);
-                WorldSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.WorldMobs[2]), 4, 16);
+                ShowBossSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[1]);
+                ShowMiniBossSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[2]);
+                ShowChampionSwitch.IsChecked = Convert.ToBoolean(configHandler.config.WorldMobs[3]);
+                WorldSizeSlider.Value = ValidateValue(ConfigHandler.SafeConvertToInt32(configHandler.config.WorldMobs[4]), 4, 16);
 
                 #endregion
 
@@ -84,18 +86,32 @@ namespace VRise.Pages
             configHandler.config.WorldMobs[0] = WorldMobsSwitch.IsChecked;
         }
 
-        private void OnlyProckedSwitch_Checked(object sender, RoutedEventArgs e)
+        private void ShowBossSwitch_Checked(object sender, RoutedEventArgs e)
         {
             if (MainWindow.loadingCfg) return;
 
-            configHandler.config.WorldMobs[1] = OnlyProckedSwitch.IsChecked;
+            configHandler.config.WorldMobs[1] = ShowBossSwitch.IsChecked;
+        }
+
+        private void ShowMiniBossSwitch_Checked(object sender, RoutedEventArgs e)
+        {
+            if (MainWindow.loadingCfg) return;
+
+            configHandler.config.WorldMobs[2] = ShowMiniBossSwitch.IsChecked;
+        }
+
+        private void ShowChampionSwitch_Checked(object sender, RoutedEventArgs e)
+        {
+            if (MainWindow.loadingCfg) return;
+
+            configHandler.config.WorldMobs[3] = ShowChampionSwitch.IsChecked;
         }
 
         private void WorldSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (MainWindow.loadingCfg) return;
 
-            configHandler.config.WorldMobs[2] = (int)WorldSizeSlider.Value;
+            configHandler.config.WorldMobs[4] = (int)WorldSizeSlider.Value;
         }
 
         #endregion
