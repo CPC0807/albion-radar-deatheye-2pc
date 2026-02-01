@@ -12,33 +12,67 @@ namespace VRise.Radar.Packets.Handlers
     {
         public LoadClusterObjectsEvent(Dictionary<byte, object> parameters) : base(parameters)
         {
-            if (((byte[][])parameters[1]).Length != 0)
+            try
             {
+                if (!parameters.ContainsKey(1) || !(parameters[1] is byte[][] byteArrays) || byteArrays.Length == 0)
+                    return;
+
                 ClusterObjectives = new Dictionary<int, ClusterObjective>();
 
-                for (int i = 0; i < ((byte[][])parameters[1]).Length; i++)
+                for (int i = 0; i < byteArrays.Length; i++)
                 {
-                    int id = ConvertId(parameters, i);
-                    byte charge = ((byte[])parameters[2])[i];
-                    Vector2 position = Additions.fromValues(((float[])parameters[5])[i], ((float[])parameters[5])[i + 1]);
-                    string type = ((string[])parameters[8])[i];
-                    DateTime time = type == "CHEST" ? new DateTime(((long[])parameters[6])[i]) : new DateTime(((long[])parameters[7])[i]);
-
-                    if (type != "CHEST" && type != "WISPS") 
-                        continue;
-
-                    ClusterObjectives.Add(id, new ClusterObjective()
+                    try
                     {
-                        Id = id,
-                        Charge = charge,
-                        Position = position,
-                        Timer = time,
-                        Type = type,
-                    });
+                        int id = ConvertId(parameters, i);
+
+                        if (!parameters.ContainsKey(2) || !(parameters[2] is byte[] charges) || i >= charges.Length)
+                            continue;
+                        byte charge = charges[i];
+
+                        Vector2 position = Vector2.Zero;
+                        if (parameters.ContainsKey(5) && parameters[5] is float[] floatArray && floatArray.Length > i + 1)
+                        {
+                            position = Additions.fromValues(floatArray[i], floatArray[i + 1]);
+                        }
+
+                        if (!parameters.ContainsKey(8) || !(parameters[8] is string[] types) || i >= types.Length)
+                            continue;
+                        string type = types[i];
+
+                        DateTime time = DateTime.Now;
+                        if (type == "CHEST" && parameters.ContainsKey(6) && parameters[6] is long[] times6 && i < times6.Length)
+                        {
+                            time = new DateTime(times6[i]);
+                        }
+                        else if (parameters.ContainsKey(7) && parameters[7] is long[] times7 && i < times7.Length)
+                        {
+                            time = new DateTime(times7[i]);
+                        }
+
+                        if (type != "CHEST" && type != "WISPS")
+                            continue;
+
+                        ClusterObjectives.Add(id, new ClusterObjective()
+                        {
+                            Id = id,
+                            Charge = charge,
+                            Position = position,
+                            Timer = time,
+                            Type = type,
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[LoadClusterObjectsEvent] Error parsing object {i}: {ex.Message}");
+                    }
                 }
 
                 if (ClusterObjectives.Count() == 0)
                     ClusterObjectives = null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LoadClusterObjectsEvent] Error parsing packet: {ex.Message}");
             }
         }
 

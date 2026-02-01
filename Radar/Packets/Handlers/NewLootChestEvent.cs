@@ -12,10 +12,20 @@ namespace VRise.Radar.Packets.Handlers
 
         public NewLootChestEvent(Dictionary<byte, object> parameters) : base(parameters)
         {
-            Id = Convert.ToInt32(parameters[offsets[0]]);
-            Position = Additions.fromFArray((float[])parameters[offsets[1]]);
-            Name = (string)parameters[offsets[2]];
-            EnchLvl = 0;
+            try
+            {
+                Id = parameters.ContainsKey(offsets[0]) ? Convert.ToInt32(parameters[offsets[0]]) : 0;
+                Position = parameters.ContainsKey(offsets[1]) && parameters[offsets[1]] is float[] pos
+                    ? Additions.fromFArray(pos)
+                    : Vector2.Zero;
+                Name = parameters.ContainsKey(offsets[2]) ? parameters[offsets[2]] as string ?? "UNKNOWN" : "UNKNOWN";
+                EnchLvl = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[NewLootChestEvent] Error parsing packet: {ex.Message}");
+                Name = "UNKNOWN";
+            }
         }
 
         public int Id { get; }
