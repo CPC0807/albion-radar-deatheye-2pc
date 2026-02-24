@@ -139,6 +139,21 @@ namespace VRise.Radar.Dependencies.Mob
             if (e.UniqueName.Contains("AVALON_TREASURE_MINION"))
                 return "DRONE";
 
+            // 優先使用 mobtypecategory 屬性來判斷 Boss/MiniBoss/Champion
+            if (!string.IsNullOrEmpty(e.MobTypeCategory))
+            {
+                switch (e.MobTypeCategory.ToLower())
+                {
+                    case "boss":
+                        return "WORLD_BOSS";
+                    case "miniboss":
+                        return "WORLD_MINIBOSS";
+                    case "champion":
+                        return "WORLD_CHAMPION";
+                }
+            }
+
+            // Fallback: 檢查 UniqueName（兼容舊版本或特殊情況）
             // 注意：必須先檢查 _MINIBOSS，因為它包含 _BOSS
             if (e.UniqueName.Contains("_MINIBOSS"))
                 return "WORLD_MINIBOSS";
@@ -148,6 +163,26 @@ namespace VRise.Radar.Dependencies.Mob
 
             if (e.UniqueName.Contains("_CHAMPION"))
                 return "WORLD_CHAMPION";
+
+            // 特殊處理：Roads/Dungeons 中的 Elite 怪物（如阿瓦隆祭司）
+            // 這些怪物可能沒有 mobtypecategory，但有 category="rd_elite" 或 "avalon"
+            if (!string.IsNullOrEmpty(e.Category) && (e.Category.Contains("rd_elite") || e.Category == "avalon"))
+            {
+                // RD Elite 怪物根據名稱判斷類型
+                if (e.UniqueName.Contains("_ELITE_BOSS"))
+                    return "WORLD_BOSS";
+                if (e.UniqueName.Contains("_PRIEST_ELITE") || e.UniqueName.Contains("_MONK_ELITE"))
+                    return "WORLD_CHAMPION"; // RD 精英祭司/僧侶視為 Champion 級別
+            }
+
+            // 特殊處理：Veteran 級別怪物
+            if (e.UniqueName.Contains("_VETERAN_CHAMPION"))
+                return "WORLD_CHAMPION";
+            if (e.UniqueName.Contains("_VETERAN_") && e.DangerState == "veteran")
+            {
+                // Veteran 標準怪物視為較強的普通怪
+                return "NULL";
+            }
 
             // TODO: other types
             // [0] = {string} "MIST_PORTAL"

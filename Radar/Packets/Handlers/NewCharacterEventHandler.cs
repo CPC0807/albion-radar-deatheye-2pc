@@ -127,7 +127,11 @@ namespace VRise.Radar.Packets.Handlers
 
                 #endregion
 
-                if (localPlayerHandler.localPlayer.CurrentCluster.ClusterColor == ClusterColor.Default)
+                // Default = 一般 PVP 區域（包括迷霧）
+                // Black = 黑區
+                // Unknown = 未知區域（也當作 PVP）
+                if (localPlayerHandler.localPlayer.CurrentCluster.ClusterColor == ClusterColor.Default ||
+                    localPlayerHandler.localPlayer.CurrentCluster.ClusterColor == ClusterColor.Unknown)
                 {
                     switch (value.Faction)
                     {
@@ -152,7 +156,7 @@ namespace VRise.Radar.Packets.Handlers
                             break;
                     }
                 }
-                else
+                else // Black 區域，所有玩家都是 PVP
                 {
                     if (Convert.ToBoolean(configHandler.config.Pvp[0]))
                         PlayBeep(Convert.ToInt32(configHandler.config.Pvp[5]));

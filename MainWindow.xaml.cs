@@ -238,6 +238,11 @@ namespace VRise
             }
         }
 
+        private void CloseApp(object sender, MouseButtonEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
         private void ShowVersion(object sender, MouseButtonEventArgs e)
         {
             if (VersionText.Visibility == Visibility.Visible)

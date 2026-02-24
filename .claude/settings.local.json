@@ -5,7 +5,14 @@
       "Bash(cat:*)",
       "Read(//c/**)",
       "Bash(test:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(python3:*)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(python:*)",
+      "Bash(git clone --depth 1 https://github.com/ao-data/ao-bin-dumps.git ao-bin-dumps-latest)",
+      "Bash(awk '{print \"\"\"\"Size:\"\"\"\", $5, \"\"\"\"Date:\"\"\"\", $6, $7, $8}')",
+      "Bash(awk '{print $9, $5}')",
+      "Bash(stat -c \"已更新: %n (%s bytes, %y)\" ao-bin-dumps/mobs.xml ao-bin-dumps/items.xml ao-bin-dumps/harvestables.xml)"
     ],
     "deny": [],
     "ask": []

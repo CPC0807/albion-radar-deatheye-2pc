@@ -59,11 +59,13 @@ namespace VRise.Radar.GameObjects.LocalPlayer
                         case "MISTS":
                             localPlayer.CurrentCluster.DisplayName = "Mists Dungeon";
                             localPlayer.CurrentCluster.Subtype = ClusterSubtype.Mist;
+                            localPlayer.CurrentCluster.ClusterColor = ClusterColor.Default; // 迷霧是 PVP 區域
                             break;
 
                         case "MISTSDUNGEON":
                             localPlayer.CurrentCluster.DisplayName = "Knightfall Abbey";
                             localPlayer.CurrentCluster.Subtype = ClusterSubtype.Abbey;
+                            localPlayer.CurrentCluster.ClusterColor = ClusterColor.Default; // 迷霧修道院是 PVP 區域
                             break;
 
                         default:

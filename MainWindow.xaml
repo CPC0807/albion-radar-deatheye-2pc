@@ -172,6 +172,13 @@
 
                                 <ui:SymbolIcon x:Name="VersionIcon" Symbol="Code24" Cursor="Hand" FontSize="20" Foreground="White" Background="#00000000" Filled="True" Margin="15 0 0 0" MouseLeftButtonDown="ShowVersion"/>
                                 <TextBlock x:Name="VersionText" Text="v0.1" Background="#00000000" Cursor="Hand" Foreground="White" VerticalAlignment="Center" Margin="5 0 0 0" FontSize="14" Visibility="Visible" MouseLeftButtonDown="ShowVersion"/>
+
+                                <!-- Close Button -->
+                                <ui:SymbolIcon Symbol="Dismiss24" Cursor="Hand" FontSize="20" Foreground="White" Filled="True" Margin="15 0 0 0" MouseLeftButtonDown="CloseApp">
+                                    <ui:SymbolIcon.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="0" Opacity="0.4"/>
+                                    </ui:SymbolIcon.Effect>
+                                </ui:SymbolIcon>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
