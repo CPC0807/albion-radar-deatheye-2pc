@@ -30,7 +30,17 @@ namespace VRise.Radar.GameObjects.LocalPlayer
                 
                 localPlayer.CurrentCluster.Id = id;
 
-                if (clusterList != null && clusterList.ContainsKey(id))
+                // 先檢查是否是特殊副本（迷霧、修道院等）
+                bool isSpecialInstance = id.Contains("@");
+                string[] temp = null;
+
+                if (isSpecialInstance)
+                {
+                    temp = id.Split('@');
+                }
+
+                // 如果不是特殊副本，從 clusters.json 讀取資訊
+                if (!isSpecialInstance && clusterList != null && clusterList.ContainsKey(id))
                 {
                     Cluster cluster = clusterList[id];
 
@@ -38,40 +48,44 @@ namespace VRise.Radar.GameObjects.LocalPlayer
                     localPlayer.CurrentCluster.DisplayName = cluster.DisplayName;
                     localPlayer.CurrentCluster.ClusterColor = cluster.ClusterColor;
                 }
-                else
+                else if (!isSpecialInstance)
                 {
                     localPlayer.CurrentCluster.ClusterColor = ClusterColor.Unknown;
                     localPlayer.CurrentCluster.DisplayName = "Unknown";
                 }
 
-                if (id.Contains("@"))
+                // 處理特殊副本（迷霧、修道院等）
+                if (isSpecialInstance)
                 {
-                    string[] temp = id.Split('@');
-
                     if (string.IsNullOrEmpty(temp[1]) || string.IsNullOrEmpty(temp[2]))
                     {
                         localPlayer.CurrentCluster.Subtype = ClusterSubtype.Unknown;
                         localPlayer.CurrentCluster.LobbyID = string.Empty;
+                        localPlayer.CurrentCluster.ClusterColor = ClusterColor.Unknown;
+                        localPlayer.CurrentCluster.DisplayName = "Unknown Instance";
                     }
-
-                    switch (temp[1])
+                    else
                     {
-                        case "MISTS":
-                            localPlayer.CurrentCluster.DisplayName = "Mists Dungeon";
-                            localPlayer.CurrentCluster.Subtype = ClusterSubtype.Mist;
-                            localPlayer.CurrentCluster.ClusterColor = ClusterColor.Default; // 迷霧是 PVP 區域
-                            break;
+                        switch (temp[1])
+                        {
+                            case "MISTS":
+                                localPlayer.CurrentCluster.DisplayName = "Mists Dungeon";
+                                localPlayer.CurrentCluster.Subtype = ClusterSubtype.Mist;
+                                localPlayer.CurrentCluster.ClusterColor = ClusterColor.Default; // 迷霧是 PVP 區域
+                                break;
 
-                        case "MISTSDUNGEON":
-                            localPlayer.CurrentCluster.DisplayName = "Knightfall Abbey";
-                            localPlayer.CurrentCluster.Subtype = ClusterSubtype.Abbey;
-                            localPlayer.CurrentCluster.ClusterColor = ClusterColor.Default; // 迷霧修道院是 PVP 區域
-                            break;
+                            case "MISTSDUNGEON":
+                                localPlayer.CurrentCluster.DisplayName = "Knightfall Abbey";
+                                localPlayer.CurrentCluster.Subtype = ClusterSubtype.Abbey;
+                                localPlayer.CurrentCluster.ClusterColor = ClusterColor.Default; // 迷霧修道院是 PVP 區域
+                                break;
 
-                        default:
-                            localPlayer.CurrentCluster.DisplayName = temp[1];
-                            localPlayer.CurrentCluster.Subtype = ClusterSubtype.Unknown;
-                            break;
+                            default:
+                                localPlayer.CurrentCluster.DisplayName = $"{temp[1]} Instance";
+                                localPlayer.CurrentCluster.Subtype = ClusterSubtype.Unknown;
+                                localPlayer.CurrentCluster.ClusterColor = ClusterColor.Unknown;
+                                break;
+                        }
                     }
 
                     if (localPlayer.CurrentCluster.LobbyID != temp[2])
