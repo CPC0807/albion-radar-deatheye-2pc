@@ -17,7 +17,18 @@ namespace VRise.Radar.Packets.Handlers
             try
             {
                 Id = parameters.ContainsKey(offsets[0]) ? Convert.ToInt32(parameters[offsets[0]]) : 0;
-                TypeId = parameters.ContainsKey(offsets[1]) ? Convert.ToInt32(parameters[offsets[1]]) - 15 : 0;
+                // 修正偏移量為 -16
+                int rawTypeId = parameters.ContainsKey(offsets[1]) ? Convert.ToInt32(parameters[offsets[1]]) : 0;
+                TypeId = rawTypeId - 16;
+
+                // 診斷日誌（可選，發布時可移除）
+                #if DEBUG
+                if (rawTypeId > 0)
+                {
+                    Console.WriteLine($"[NewMobEvent] Raw typeId: {rawTypeId}, After -16: {TypeId}");
+                }
+                #endif
+
                 Position = parameters.ContainsKey(offsets[2]) && parameters[offsets[2]] is float[] pos
                     ? Additions.fromFArray(pos)
                     : Vector2.Zero;

@@ -17,15 +17,15 @@ namespace VRise.Pages
             switch ((e.Source as Button).Tag)
             {
                 case "Discord":
-                    System.Diagnostics.Process.Start("https://discord.gg/Jhr5Y7qrCY");
+                    System.Diagnostics.Process.Start("https://www.google.com");
                     break;
 
                 case "Github":
-                    System.Diagnostics.Process.Start("https://github.com/pxlbit228");
+                    System.Diagnostics.Process.Start("https://www.google.com");
                     break;
 
                 case "Youtube":
-                    System.Diagnostics.Process.Start("https://www.youtube.com/@goodbyesbi");
+                    System.Diagnostics.Process.Start("https://www.google.com");
                     break;
             }
         }

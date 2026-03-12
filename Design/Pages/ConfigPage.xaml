@@ -100,6 +100,44 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+
+            <Border CornerRadius="5" Background="{DynamicResource MainColor}" Margin="0 10 0 0">
+                <StackPanel>
+                    <Border CornerRadius="5 5 0 0" BorderThickness="0 0 0 1" BorderBrush="{DynamicResource BorderColor}">
+                        <TextBlock Margin="10 8" Text="Assets Updater" FontSize="16"/>
+                    </Border>
+                    <StackPanel Margin="10">
+                        <!-- Status Display -->
+                        <Grid Margin="0 0 0 10">
+                            <TextBlock x:Name="AssetsStatusTB" Text="Status: Checking..." FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource ThirdColor}"/>
+                        </Grid>
+
+                        <!-- Check Update Button -->
+                        <Grid Margin="0 0 0 5">
+                            <Button x:Name="CheckUpdateBtn" Height="30" Padding="0" Width="270" HorizontalAlignment="Left" Focusable="False" Click="CheckUpdate">
+                                <TextBlock Text="Check for Updates" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThirdColor}"/>
+                            </Button>
+                        </Grid>
+
+                        <!-- Update Buttons Row -->
+                        <Grid Margin="0 5 0 5">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="UpdateAoBinDumpsBtn" Height="30" Padding="0" Width="130" HorizontalAlignment="Left" Focusable="False" Click="UpdateAssets" Tag="AoBinDumps" IsEnabled="False">
+                                    <TextBlock Text="Update Data" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThirdColor}"/>
+                                </Button>
+                                <Button x:Name="UpdateItemsBtn" Height="30" Padding="0" Width="130" HorizontalAlignment="Right" Focusable="False" Margin="10 0 0 0" Click="UpdateAssets" Tag="Items" IsEnabled="False">
+                                    <TextBlock Text="Update Items" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThirdColor}"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Auto Update Checkbox -->
+                        <Grid Margin="0 5 0 0">
+                            <CheckBox x:Name="AutoUpdateCheckbox" Content="Auto-check on startup" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource ThirdColor}" Checked="AutoUpdateChanged" Unchecked="AutoUpdateChanged"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </StackPanel>
 </Page>

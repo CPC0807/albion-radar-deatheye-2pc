@@ -142,7 +142,7 @@ namespace VRise.Settings
 
             #region ESP
 
-            object[] s = { true, 0, "#FFFF0100", "#FFFF0100", 4, 0, false, "#FFFF0100", false, "#FFFF0100", false, "#FFFF0100", false, "#FFFF0100", false, "#FFFF0100", 0, "#FFFF0100", false, "#FFFF0100", "#FFFF0100", false };
+            object[] s = { true, 0, "#FFFF0100", "#FFFF0100", 4, 0, false, "#FFFF0100", false, "#FFFF0100", false, "#FFFF0100", false, "#FFFF0100", false, "#FFFF0100", 0, "#FFFF0100", false, "#FFFF0100", "#FFFF0100", true };
             settingsJson.NoPvp = s;
             settingsJson.Pvp = s;
             settingsJson.Faction = s;

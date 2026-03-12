@@ -309,6 +309,7 @@
     <Compile Include="Radar\Utility\Overlay.cs" />
     <Compile Include="Radar\Utility\OverlayGraphics.cs" />
     <Compile Include="Radar\Utility\RadarImages.cs" />
+    <Compile Include="Settings\AssetsUpdater.cs" />
     <Compile Include="Settings\Config.cs" />
     <Compile Include="Settings\ConfigHandler.cs" />
     <Compile Include="Design\ColorPicker.xaml.cs">

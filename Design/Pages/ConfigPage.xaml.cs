@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace VRise.Pages
 {
@@ -15,12 +17,25 @@ namespace VRise.Pages
     public partial class ConfigPage : Page
     {
         MainWindow MainWindow;
+        private AssetsUpdater assetsUpdater;
+        private bool isUpdating = false;
+
         public ConfigPage(MainWindow MainWindow)
         {
             InitializeComponent();
             this.MainWindow = MainWindow;
 
             ConfigList.ItemsSource = ConfigHandler.Source.ConfigList;
+
+            // Initialize AssetsUpdater
+            assetsUpdater = new AssetsUpdater();
+            assetsUpdater.OnUpdateProgress += AssetsUpdater_OnUpdateProgress;
+
+            // Load auto-update preference
+            AutoUpdateCheckbox.IsChecked = LoadAutoUpdatePreference();
+
+            // Display initial status
+            UpdateStatusDisplay();
         }
 
         private void ConfigList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -143,5 +158,155 @@ namespace VRise.Pages
             ConfigList.Items.Refresh();
             MainWindow.ConfigCB.Items.Refresh();
         }
+
+        #region Assets Updater
+
+        private void UpdateStatusDisplay()
+        {
+            string status = assetsUpdater.GetAssetsStatus();
+            string lastUpdate = assetsUpdater.GetAoBinDumpsLastUpdate();
+            AssetsStatusTB.Text = $"Status: {status}\nLast update: {lastUpdate}";
+        }
+
+        private async void CheckUpdate(object sender, RoutedEventArgs e)
+        {
+            if (isUpdating) return;
+
+            isUpdating = true;
+            CheckUpdateBtn.IsEnabled = false;
+            AssetsStatusTB.Text = "Checking for updates...";
+
+            try
+            {
+                bool hasUpdates = await assetsUpdater.CheckAoBinDumpsUpdateAsync();
+
+                // Enable update buttons based on check result
+                UpdateAoBinDumpsBtn.IsEnabled = hasUpdates;
+                UpdateItemsBtn.IsEnabled = true; // Items can always be updated
+
+                UpdateStatusDisplay();
+            }
+            catch (Exception ex)
+            {
+                AssetsStatusTB.Text = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                CheckUpdateBtn.IsEnabled = true;
+                isUpdating = false;
+            }
+        }
+
+        private async void UpdateAssets(object sender, RoutedEventArgs e)
+        {
+            if (isUpdating) return;
+
+            var button = sender as Button;
+            string tag = button.Tag.ToString();
+
+            isUpdating = true;
+            button.IsEnabled = false;
+            CheckUpdateBtn.IsEnabled = false;
+
+            try
+            {
+                bool success = false;
+
+                if (tag == "AoBinDumps")
+                {
+                    success = await assetsUpdater.UpdateAoBinDumpsAsync();
+                    if (success)
+                    {
+                        // After updating ao-bin-dumps, suggest updating items
+                        var result = MessageBox.Show(
+                            "ao-bin-dumps updated successfully!\n\nDo you want to download missing item images now?",
+                            "Update Items?",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question
+                        );
+
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            await assetsUpdater.DownloadMissingItemsAsync();
+                        }
+                    }
+                }
+                else if (tag == "Items")
+                {
+                    success = await assetsUpdater.DownloadMissingItemsAsync();
+                }
+
+                UpdateStatusDisplay();
+            }
+            catch (Exception ex)
+            {
+                AssetsStatusTB.Text = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                button.IsEnabled = true;
+                CheckUpdateBtn.IsEnabled = true;
+                isUpdating = false;
+            }
+        }
+
+        private void AutoUpdateChanged(object sender, RoutedEventArgs e)
+        {
+            bool isChecked = AutoUpdateCheckbox.IsChecked ?? false;
+            SaveAutoUpdatePreference(isChecked);
+        }
+
+        private void AssetsUpdater_OnUpdateProgress(string message, AssetsUpdater.UpdateStatus status)
+        {
+            // Update UI on dispatcher thread
+            Dispatcher.Invoke(() =>
+            {
+                string prefix = "";
+                switch (status)
+                {
+                    case AssetsUpdater.UpdateStatus.Success:
+                        prefix = "[✓] ";
+                        break;
+                    case AssetsUpdater.UpdateStatus.Error:
+                        prefix = "[✗] ";
+                        break;
+                    case AssetsUpdater.UpdateStatus.Warning:
+                        prefix = "[!] ";
+                        break;
+                    case AssetsUpdater.UpdateStatus.InProgress:
+                        prefix = "[...] ";
+                        break;
+                }
+
+                AssetsStatusTB.Text = prefix + message;
+            });
+        }
+
+        private bool LoadAutoUpdatePreference()
+        {
+            try
+            {
+                string prefFile = Path.Combine(Pathfinder.mainFolder, "auto_update.cfg");
+                if (File.Exists(prefFile))
+                {
+                    string content = File.ReadAllText(prefFile);
+                    return content.Trim().ToLower() == "true";
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        private void SaveAutoUpdatePreference(bool enabled)
+        {
+            try
+            {
+                string prefFile = Path.Combine(Pathfinder.mainFolder, "auto_update.cfg");
+                File.WriteAllText(prefFile, enabled.ToString());
+            }
+            catch { }
+        }
+
+        #endregion
     }
 }
