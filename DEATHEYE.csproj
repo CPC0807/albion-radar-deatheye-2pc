@@ -306,6 +306,7 @@
     <Compile Include="Radar\Utility\DictionaryExtensions.cs" />
     <Compile Include="Radar\Utility\Enums.cs" />
     <Compile Include="Radar\Utility\IDrawer.cs" />
+    <Compile Include="Radar\Utility\MobOffsetDetector.cs" />
     <Compile Include="Radar\Utility\Overlay.cs" />
     <Compile Include="Radar\Utility\OverlayGraphics.cs" />
     <Compile Include="Radar\Utility\RadarImages.cs" />

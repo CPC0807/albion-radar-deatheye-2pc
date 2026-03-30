@@ -98,6 +98,7 @@ namespace VRise.Radar.Dependencies.Mob
                 .Select((e, i) => new MobInfo()
                 {
                     Id = i,
+                    UniqueName = e.UniqueName,  // 保存 UniqueName 用於動態 offset 檢測
                     Tier = e.Tier,
                     Type = ConvertMobType(e),
                     HarvestableType = ConvertHarvestableType(e),

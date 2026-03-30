@@ -17,15 +17,16 @@ namespace VRise.Radar.Packets.Handlers
             try
             {
                 Id = parameters.ContainsKey(offsets[0]) ? Convert.ToInt32(parameters[offsets[0]]) : 0;
-                // 修正偏移量為 -16
-                int rawTypeId = parameters.ContainsKey(offsets[1]) ? Convert.ToInt32(parameters[offsets[1]]) : 0;
-                TypeId = rawTypeId - 16;
 
-                // 診斷日誌（可選，發布時可移除）
+                // 使用動態檢測的 Offset（自動適應 ao-bin-dumps 更新）
+                int rawTypeId = parameters.ContainsKey(offsets[1]) ? Convert.ToInt32(parameters[offsets[1]]) : 0;
+                TypeId = rawTypeId - Init.MobTypeIdOffset;
+
+                // 診斷日誌（Debug 模式下顯示）
                 #if DEBUG
                 if (rawTypeId > 0)
                 {
-                    Console.WriteLine($"[NewMobEvent] Raw typeId: {rawTypeId}, After -16: {TypeId}");
+                    Console.WriteLine($"[NewMobEvent] Raw typeId: {rawTypeId}, Offset: {Init.MobTypeIdOffset}, Final TypeId: {TypeId}");
                 }
                 #endif
 

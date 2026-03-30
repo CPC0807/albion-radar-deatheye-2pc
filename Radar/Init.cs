@@ -19,6 +19,7 @@ using VRise.Protocol.Connect.Messages.ResponseObj;
 using VRise.Radar.Dependencies.Harvestable;
 using VRise.Radar.Dependencies.Item;
 using VRise.Radar.Dependencies.Mob;
+using VRise.Radar.Utility;
 using VRise.Tools;
 
 namespace VRise.Radar
@@ -42,6 +43,9 @@ namespace VRise.Radar
 
         public static PacketIndexes PacketIndexes;
         public static PacketOffsets PacketOffsets;
+
+        // 動態檢測的 Mob Offset（在初始化時自動計算）
+        public static int MobTypeIdOffset { get; private set; }
 
         public Init()
         {
@@ -78,10 +82,21 @@ namespace VRise.Radar
                 "Can't load ao-bin-dumps/harvestables.xml"
             );
 
-            mobsHandler = Diagnostics.DoVital(() =>
-                    new MobsHandler(MobData.Load("ao-bin-dumps/mobs.xml")),
+            // 加載 Mob 數據並動態檢測 Offset
+            List<MobInfo> mobInfos = Diagnostics.DoVital(() =>
+                    MobData.Load("ao-bin-dumps/mobs.xml"),
                 "Can't load ao-bin-dumps/mobs.xml"
             );
+
+            // 執行動態 Offset 檢測
+            MobTypeIdOffset = MobOffsetDetector.DetectOffset(mobInfos);
+
+            // 驗證檢測結果（可選）
+            #if DEBUG
+            MobOffsetDetector.VerifyOffset(mobInfos, MobTypeIdOffset);
+            #endif
+
+            mobsHandler = new MobsHandler(mobInfos);
 
             dungeonsHandler = new DungeonsHandler();
             fishNodesHandler = new FishNodesHandler();
