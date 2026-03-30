@@ -19,14 +19,14 @@ namespace VRise.Radar.Packets.Handlers
                 Id = parameters.ContainsKey(offsets[0]) ? Convert.ToInt32(parameters[offsets[0]]) : 0;
 
                 // 使用動態檢測的 Offset（自動適應 ao-bin-dumps 更新）
-                int rawTypeId = parameters.ContainsKey(offsets[1]) ? Convert.ToInt32(parameters[offsets[1]]) : 0;
-                TypeId = rawTypeId - Init.MobTypeIdOffset;
+                RawTypeId = parameters.ContainsKey(offsets[1]) ? Convert.ToInt32(parameters[offsets[1]]) : 0;
+                TypeId = RawTypeId - Init.MobTypeIdOffset;
 
                 // 診斷日誌（Debug 模式下顯示）
                 #if DEBUG
-                if (rawTypeId > 0)
+                if (RawTypeId > 0)
                 {
-                    Console.WriteLine($"[NewMobEvent] Raw typeId: {rawTypeId}, Offset: {Init.MobTypeIdOffset}, Final TypeId: {TypeId}");
+                    Console.WriteLine($"[NewMobEvent] Raw typeId: {RawTypeId}, Offset: {Init.MobTypeIdOffset}, Final TypeId: {TypeId}");
                 }
                 #endif
 
@@ -56,6 +56,7 @@ namespace VRise.Radar.Packets.Handlers
 
         public int Id { get; }
 
+        public int RawTypeId { get; }
         public int TypeId { get; }
         public Vector2 Position { get; }
 

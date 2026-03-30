@@ -33,30 +33,40 @@ namespace VRise.Radar.GameObjects.Mobs
             }
         }
 
-        public void AddMob(int id, int typeId, Vector2 position, Health health, byte enchLvl)
+        public void AddMob(int id, int rawTypeId, int typeId, Vector2 position, Health health, byte enchLvl)
         {
             lock (mobsList)
             {
                 if (mobsList.ContainsKey(id))
                     mobsList.TryRemove(id, out Mob m);
 
-                // 使用字典快速查找 typeId 對應的 MobInfo
-                MobInfo foundMobInfo = null;
-                if (mobInfoByTypeId.TryGetValue(typeId, out foundMobInfo))
+                if (!IsKnownTypeId(typeId, out MobInfo foundMobInfo))
                 {
-                    // 診斷日誌（可選）
-                    #if DEBUG
-                    Console.WriteLine($"[MobsHandler] Found mob: typeId={typeId}, Tier={foundMobInfo.Tier}, Type={foundMobInfo.Type}");
-                    #endif
+                    Console.WriteLine("[MobsHandler] ERROR: Rejected mob because calculated typeId is out of range.");
+                    Console.WriteLine($"  Raw typeId: {rawTypeId}");
+                    Console.WriteLine($"  Calculated typeId: {typeId}");
+                    Console.WriteLine($"  Loaded mob count: {mobInfos.Count}");
+                    Console.WriteLine($"  Active offset: {Init.MobTypeIdOffset}");
+                    return;
                 }
-                else
-                {
-                    // typeId 超出範圍，可能是新增的怪物或錯誤
-                    Console.WriteLine($"[MobsHandler] WARNING: typeId {typeId} not found in mobInfos (total: {mobInfos.Count})");
-                }
+
+                #if DEBUG
+                Console.WriteLine($"[MobsHandler] Found mob: rawTypeId={rawTypeId}, typeId={typeId}, Tier={foundMobInfo.Tier}, Type={foundMobInfo.Type}");
+                #endif
 
                 mobsList.TryAdd(id, new Mob(id, typeId, position, enchLvl, foundMobInfo, health));
             }
+        }
+
+        private bool IsKnownTypeId(int typeId, out MobInfo foundMobInfo)
+        {
+            if (typeId < 0 || typeId >= mobInfos.Count)
+            {
+                foundMobInfo = null;
+                return false;
+            }
+
+            return mobInfoByTypeId.TryGetValue(typeId, out foundMobInfo);
         }
 
         public void UpdateMobPosition(int id, byte[] positionBytes, byte[] newPositionBytes, float speed, DateTime time)

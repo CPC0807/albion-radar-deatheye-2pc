@@ -1,144 +1,244 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using VRise.Protocol.Connect.Messages.ResponseObj;
 
 namespace VRise.Radar.Utility
 {
+    public sealed class AnchorMob
+    {
+        public AnchorMob(string uniqueName, int expectedIndex, string description)
+        {
+            UniqueName = uniqueName;
+            ExpectedIndex = expectedIndex;
+            Description = description;
+        }
+
+        public string UniqueName { get; }
+        public int ExpectedIndex { get; }
+        public string Description { get; }
+    }
+
+    public sealed class AnchorMatch
+    {
+        public AnchorMatch(AnchorMob anchor, int actualIndex)
+        {
+            Anchor = anchor;
+            ActualIndex = actualIndex;
+        }
+
+        public AnchorMob Anchor { get; }
+        public int ActualIndex { get; }
+        public int IndexShift => ActualIndex - Anchor.ExpectedIndex;
+    }
+
+    public sealed class MobOffsetDetectionResult
+    {
+        public bool Success { get; set; }
+        public int? DetectedOffset { get; set; }
+        public int MatchedAnchors { get; set; }
+        public int TotalAnchors { get; set; }
+        public int? WinningShift { get; set; }
+        public IReadOnlyDictionary<int, int> VoteBreakdown { get; set; }
+        public string FailureReason { get; set; }
+        public IReadOnlyList<AnchorMatch> Matches { get; set; }
+
+        public string FormatSummary()
+        {
+            string votes = VoteBreakdown == null || VoteBreakdown.Count == 0
+                ? "none"
+                : string.Join(", ", VoteBreakdown.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key)
+                    .Select(kv => $"{kv.Key}:{kv.Value}"));
+
+            return $"success={Success}, matched={MatchedAnchors}/{TotalAnchors}, winningShift={WinningShift?.ToString() ?? "n/a"}, detectedOffset={DetectedOffset?.ToString() ?? "n/a"}, votes=[{votes}]";
+        }
+    }
+
     /// <summary>
-    /// 動態檢測 Mob TypeId 的 Offset
-    /// 用於自動適應 ao-bin-dumps 更新導致的索引變化
+    /// Dynamically detects the mob typeId offset from mobs.xml and rejects low-confidence results.
     /// </summary>
     public static class MobOffsetDetector
     {
-        /// <summary>
-        /// 錨點怪物列表
-        /// Key: UniqueName (XML 中的唯一名稱，永遠不變)
-        /// Value: 預期的 XML 索引（基於當前 ao-bin-dumps 版本）
-        ///
-        /// 選擇標準：
-        /// 1. 遊戲核心怪物，不會被刪除
-        /// 2. 從遊戲發布初期就存在
-        /// 3. 分佈在不同索引區間（前、中、後）
-        /// </summary>
-        private static readonly Dictionary<string, int> AnchorMobs = new Dictionary<string, int>
+        private const int DefaultOffset = 16;
+        private const int MinimumMatchedAnchors = 4;
+        private const double RequiredWinningVoteRatio = 0.70;
+        private const int MinimumAllowedOffset = 1;
+        private const int MaximumAllowedOffset = 128;
+
+        private static readonly IReadOnlyList<AnchorMob> AnchorMobs = new[]
         {
-            // 索引 0 - 遊戲最早期的 Boss（T3）
-            { "T3_MOB_TR_HERETIC_MAGE_BOSS", 0 },
-
-            // 索引 3 - T4 召喚物
-            { "T4_MOB_TR_HERETIC_SHADOWMASK_SUMMON", 3 },
-
-            // 索引 9 - T4 Keeper Boss（常見）
-            { "T4_MOB_TR_SILVER_KEEPER_EARTHDAUGHTER_BOSS", 9 },
-
-            // 索引 402 - T5 寶藏熊（採集怪物）
-            { "T5_MOB_TREASURE_BEAR", 402 },
+            new AnchorMob("T3_MOB_TR_HERETIC_MAGE_BOSS", 0, "Early tracking boss"),
+            new AnchorMob("T4_MOB_TR_HERETIC_SHADOWMASK_SUMMON", 3, "Early summon"),
+            new AnchorMob("T4_MOB_TR_SILVER_KEEPER_EARTHDAUGHTER_BOSS", 9, "Early keeper boss"),
+            new AnchorMob("T5_MOB_TREASURE_BEAR", 402, "Early harvestable mob"),
+            new AnchorMob("T7_MOB_ROAMING_HERETIC_THIEF", 1000, "Mid roaming mob"),
+            new AnchorMob("T8_MOB_UNDEAD_SPECIAL_PULLER_VETERAN", 2000, "Late-mid veteran mob"),
+            new AnchorMob("T5_MOB_MD_UNDEAD_SKELETON_MELEE", 3000, "Dungeon mob"),
+            new AnchorMob("T5_MOB_RD_MORGANA_GIANT", 4000, "Roads mob"),
         };
 
-        /// <summary>
-        /// 默認 Offset（如果檢測失敗時使用）
-        /// </summary>
-        private const int DEFAULT_OFFSET = 16;
-
-        /// <summary>
-        /// 檢測正確的 Offset
-        /// </summary>
-        /// <param name="mobInfos">從 XML 加載的 MobInfo 列表</param>
-        /// <returns>檢測到的 Offset 值</returns>
-        public static int DetectOffset(List<MobInfo> mobInfos)
+        public static MobOffsetDetectionResult DetectOffset(List<MobInfo> mobInfos)
         {
             Console.WriteLine("[MobOffsetDetector] Starting offset detection...");
             Console.WriteLine($"[MobOffsetDetector] Total mobs in XML: {mobInfos.Count}");
 
-            // 用於統計檢測結果
-            Dictionary<int, int> offsetVotes = new Dictionary<int, int>();
+            var matches = new List<AnchorMatch>();
+            var votes = new Dictionary<int, int>();
+            var mobIndexByUniqueName = mobInfos
+                .Where(m => !string.IsNullOrEmpty(m.UniqueName))
+                .GroupBy(m => m.UniqueName)
+                .ToDictionary(g => g.Key, g => g.First().Id);
 
-            // 遍歷所有錨點怪物
             foreach (var anchor in AnchorMobs)
             {
-                string uniqueName = anchor.Key;
-                int expectedIndex = anchor.Value;
-
-                // 在 mobInfos 中查找這個怪物的實際索引
-                int actualIndex = -1;
-                for (int i = 0; i < mobInfos.Count; i++)
+                if (!mobIndexByUniqueName.TryGetValue(anchor.UniqueName, out int actualIndex))
                 {
-                    if (mobInfos[i].UniqueName == uniqueName)
-                    {
-                        actualIndex = i;
-                        break;
-                    }
+                    Console.WriteLine($"[MobOffsetDetector] WARNING: Anchor '{anchor.UniqueName}' ({anchor.Description}) not found in XML!");
+                    continue;
                 }
 
-                if (actualIndex >= 0)
-                {
-                    // 計算索引偏移（實際索引 - 預期索引）
-                    int indexShift = actualIndex - expectedIndex;
+                var match = new AnchorMatch(anchor, actualIndex);
+                matches.Add(match);
 
-                    Console.WriteLine($"[MobOffsetDetector] Anchor: {uniqueName}");
-                    Console.WriteLine($"  Expected index: {expectedIndex}, Actual index: {actualIndex}, Shift: {indexShift}");
+                if (!votes.ContainsKey(match.IndexShift))
+                    votes[match.IndexShift] = 0;
+                votes[match.IndexShift]++;
 
-                    // 記錄這個偏移的投票
-                    if (!offsetVotes.ContainsKey(indexShift))
-                        offsetVotes[indexShift] = 0;
-                    offsetVotes[indexShift]++;
-                }
-                else
-                {
-                    Console.WriteLine($"[MobOffsetDetector] WARNING: Anchor '{uniqueName}' not found in XML!");
-                }
+                Console.WriteLine($"[MobOffsetDetector] Anchor: {anchor.UniqueName} ({anchor.Description})");
+                Console.WriteLine($"  Expected index: {anchor.ExpectedIndex}, Actual index: {actualIndex}, Shift: {match.IndexShift}");
             }
 
-            // 如果沒有找到任何錨點，使用默認值
-            if (offsetVotes.Count == 0)
+            var result = new MobOffsetDetectionResult
             {
-                Console.WriteLine($"[MobOffsetDetector] No anchors found! Using default offset: {DEFAULT_OFFSET}");
-                return DEFAULT_OFFSET;
+                MatchedAnchors = matches.Count,
+                TotalAnchors = AnchorMobs.Count,
+                VoteBreakdown = new Dictionary<int, int>(votes),
+                Matches = matches,
+            };
+
+            if (matches.Count < MinimumMatchedAnchors)
+            {
+                result.FailureReason = $"Only matched {matches.Count}/{AnchorMobs.Count} anchors; need at least {MinimumMatchedAnchors}.";
+                LogFailure(result);
+                return result;
             }
 
-            // 找出得票最多的偏移量
-            var mostVotedShift = offsetVotes.OrderByDescending(kv => kv.Value).First();
-            int detectedIndexShift = mostVotedShift.Key;
-            int voteCount = mostVotedShift.Value;
+            if (votes.Count == 0)
+            {
+                result.FailureReason = "No valid anchor votes were collected.";
+                LogFailure(result);
+                return result;
+            }
 
-            Console.WriteLine($"[MobOffsetDetector] Most common index shift: {detectedIndexShift} (votes: {voteCount}/{AnchorMobs.Count})");
+            var orderedVotes = votes.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key).ToList();
+            var winningVote = orderedVotes[0];
+            result.WinningShift = winningVote.Key;
 
-            // 計算最終的 Offset
-            // Offset 的邏輯：遊戲 typeId = XML index + Offset
-            // 所以 Offset 需要根據 index shift 調整
-            int detectedOffset = DEFAULT_OFFSET - detectedIndexShift;
+            if (orderedVotes.Count > 1 && orderedVotes[1].Value == winningVote.Value)
+            {
+                result.FailureReason = $"Anchor votes are tied between shifts {winningVote.Key} and {orderedVotes[1].Key}.";
+                LogFailure(result);
+                return result;
+            }
 
-            Console.WriteLine($"[MobOffsetDetector] ========================================");
+            double winningRatio = (double)winningVote.Value / matches.Count;
+            if (winningRatio < RequiredWinningVoteRatio)
+            {
+                result.FailureReason = $"Winning shift {winningVote.Key} only has {winningVote.Value}/{matches.Count} votes ({winningRatio:P0}); need at least {RequiredWinningVoteRatio:P0}.";
+                LogFailure(result);
+                return result;
+            }
+
+            int detectedOffset = DefaultOffset - winningVote.Key;
+            result.DetectedOffset = detectedOffset;
+
+            if (detectedOffset < MinimumAllowedOffset || detectedOffset > MaximumAllowedOffset)
+            {
+                result.FailureReason = $"Detected offset {detectedOffset} is outside the allowed range {MinimumAllowedOffset}..{MaximumAllowedOffset}.";
+                LogFailure(result);
+                return result;
+            }
+
+            result.Success = true;
+
+            Console.WriteLine($"[MobOffsetDetector] Most common index shift: {winningVote.Key} (votes: {winningVote.Value}/{matches.Count})");
+            Console.WriteLine("[MobOffsetDetector] ========================================");
             Console.WriteLine($"[MobOffsetDetector] Detected Offset: {detectedOffset}");
-            Console.WriteLine($"[MobOffsetDetector] (Previous default: {DEFAULT_OFFSET}, Index shift: {detectedIndexShift})");
-            Console.WriteLine($"[MobOffsetDetector] ========================================");
+            Console.WriteLine($"[MobOffsetDetector] (Default offset: {DefaultOffset}, Index shift: {winningVote.Key})");
+            Console.WriteLine($"[MobOffsetDetector] Summary: {result.FormatSummary()}");
+            Console.WriteLine("[MobOffsetDetector] ========================================");
 
-            return detectedOffset;
+            return result;
         }
 
-        /// <summary>
-        /// 驗證檢測結果
-        /// </summary>
-        public static void VerifyOffset(List<MobInfo> mobInfos, int detectedOffset)
+        public static bool VerifyOffset(List<MobInfo> mobInfos, MobOffsetDetectionResult detectionResult)
         {
+            if (detectionResult == null)
+            {
+                Console.WriteLine("[MobOffsetDetector] Verification skipped because detection result is null.");
+                return false;
+            }
+
+            if (!detectionResult.Success || !detectionResult.DetectedOffset.HasValue)
+            {
+                Console.WriteLine($"[MobOffsetDetector] Verification skipped because detection failed: {detectionResult.FailureReason}");
+                return false;
+            }
+
+            int detectedOffset = detectionResult.DetectedOffset.Value;
             Console.WriteLine($"[MobOffsetDetector] Verifying offset {detectedOffset}...");
 
-            foreach (var anchor in AnchorMobs)
+            var mobInfoByUniqueName = mobInfos
+                .Where(m => !string.IsNullOrEmpty(m.UniqueName))
+                .GroupBy(m => m.UniqueName)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            foreach (var match in detectionResult.Matches.OrderBy(m => m.Anchor.ExpectedIndex))
             {
-                string uniqueName = anchor.Key;
-                int expectedIndex = anchor.Value;
-
-                var mobInfo = mobInfos.FirstOrDefault(m => m.UniqueName == uniqueName);
-                if (mobInfo != null)
+                if (!mobInfoByUniqueName.TryGetValue(match.Anchor.UniqueName, out var mobInfo))
                 {
-                    int actualIndex = mobInfo.Id;
-                    int calculatedTypeId = actualIndex + detectedOffset;
-
-                    Console.WriteLine($"  {uniqueName}:");
-                    Console.WriteLine($"    XML Index: {actualIndex}, TypeId (with offset): {calculatedTypeId}");
+                    Console.WriteLine($"[MobOffsetDetector] Verification failed: anchor '{match.Anchor.UniqueName}' disappeared.");
+                    return false;
                 }
+
+                int actualIndex = mobInfo.Id;
+                if (actualIndex != match.ActualIndex)
+                {
+                    Console.WriteLine($"[MobOffsetDetector] Verification failed: anchor '{match.Anchor.UniqueName}' moved from recorded index {match.ActualIndex} to {actualIndex}.");
+                    return false;
+                }
+
+                int calculatedTypeId = actualIndex + detectedOffset;
+                Console.WriteLine($"  {match.Anchor.UniqueName}:");
+                Console.WriteLine($"    XML Index: {actualIndex}, TypeId (with offset): {calculatedTypeId}");
             }
+
+            Console.WriteLine("[MobOffsetDetector] Verification passed.");
+            return true;
+        }
+
+        public static string BuildFailureMessage(MobOffsetDetectionResult result)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine("Mob offset detection failed.");
+            builder.AppendLine(result?.FailureReason ?? "Unknown reason.");
+
+            if (result != null)
+            {
+                builder.AppendLine(result.FormatSummary());
+            }
+
+            builder.AppendLine("Update ao-bin-dumps or review the anchor definitions before starting the radar.");
+            return builder.ToString();
+        }
+
+        private static void LogFailure(MobOffsetDetectionResult result)
+        {
+            Console.WriteLine("[MobOffsetDetector] ========================================");
+            Console.WriteLine($"[MobOffsetDetector] Detection failed: {result.FailureReason}");
+            Console.WriteLine($"[MobOffsetDetector] Summary: {result.FormatSummary()}");
+            Console.WriteLine("[MobOffsetDetector] ========================================");
         }
     }
 }

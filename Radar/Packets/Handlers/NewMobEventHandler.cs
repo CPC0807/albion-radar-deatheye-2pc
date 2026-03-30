@@ -15,7 +15,7 @@ namespace VRise.Radar.Packets.Handlers
 
         protected override Task OnActionAsync(NewMobEvent value)
         {
-            mobHandler.AddMob(value.Id, value.TypeId, value.Position, value.Health, value.Charge);
+            mobHandler.AddMob(value.Id, value.RawTypeId, value.TypeId, value.Position, value.Health, value.Charge);
 
             return Task.CompletedTask;
         }

@@ -88,13 +88,19 @@ namespace VRise.Radar
                 "Can't load ao-bin-dumps/mobs.xml"
             );
 
-            // 執行動態 Offset 檢測
-            MobTypeIdOffset = MobOffsetDetector.DetectOffset(mobInfos);
+            // 執行動態 Offset 檢測，檢測失敗時直接中止，避免錯誤映射靜默污染整個 mob 流程。
+            var offsetDetection = MobOffsetDetector.DetectOffset(mobInfos);
+            if (!offsetDetection.Success || !offsetDetection.DetectedOffset.HasValue)
+            {
+                Diagnostics.ReportFatal(MobOffsetDetector.BuildFailureMessage(offsetDetection));
+            }
 
-            // 驗證檢測結果（可選）
-            #if DEBUG
-            MobOffsetDetector.VerifyOffset(mobInfos, MobTypeIdOffset);
-            #endif
+            MobTypeIdOffset = offsetDetection.DetectedOffset.Value;
+
+            if (!MobOffsetDetector.VerifyOffset(mobInfos, offsetDetection))
+            {
+                Diagnostics.ReportFatal("Mob offset verification failed after detection.\n\n" + offsetDetection.FormatSummary());
+            }
 
             mobsHandler = new MobsHandler(mobInfos);
 
