@@ -115,9 +115,11 @@ namespace VRise.Radar
 
             ReceiverBuilder builder = ReceiverBuilder.Create();
 
-            #if DEBUG
+            // 臨時啟用調試模式來診斷今天的遊戲更新導致的封包解析問題
             builder.AddHandler(new DebugHandler());
-            #endif
+
+            // 如果需要看到所有事件（會產生大量日志），取消下面註釋
+            // builder.AddHandler(new DebugAllEventsHandler());
             builder.AddEventHandler(new LeaveEventHandler(playersHandler, mobsHandler, dungeonsHandler,
                 fishNodesHandler, gatedWispsHandler, lootChestsHandler));
             builder.AddResponseHandler(new ChangeClusterEventHandler(localPlayerHandler, playersHandler,
@@ -150,7 +152,11 @@ namespace VRise.Radar
 
             photonReceiver = builder.Build();
 
+            Console.WriteLine("[Init] Protocol 18 enabled - using direct handler invocation");
+
             #endregion
+
+       
 
             #region THREADS
 

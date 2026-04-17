@@ -1,5 +1,6 @@
 ﻿using Albion.Network;
 using VRise.Radar.Utility;
+using VRise.Radar.Packets.Photon;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -20,7 +21,8 @@ namespace VRise.Radar.Packets.Handlers
             Guild = parameters.ContainsKey(offsets[2]) ? parameters[offsets[2]] as string : "!";
             Alliance = parameters.ContainsKey(offsets[3]) ? parameters[offsets[3]] as string : "!";
 
-            Location = parameters[offsets[4]] as string;
+            // Location extraction with fallback logic (handles game updates)
+            Location = ExtractLocationSafely(parameters, offsets[4]);
 
             Faction = (Faction)parameters[offsets[5]];
 
@@ -55,5 +57,35 @@ namespace VRise.Radar.Packets.Handlers
         public string Alliance { get; }
         public string Location { get; }
         public Vector2 Position { get; }
+
+        /// <summary>
+        /// Safely extracts location from parameters with fallback logic
+        /// Based on albiondata-client's approach to handle protocol changes
+        /// </summary>
+        private string ExtractLocationSafely(Dictionary<byte, object> parameters, byte preferredKey)
+        {
+            // Try direct access first
+            if (parameters.ContainsKey(preferredKey) && parameters[preferredKey] is string directLocation)
+            {
+                if (!string.IsNullOrWhiteSpace(directLocation))
+                    return directLocation;
+            }
+
+            // Fallback: use helper to search recursively
+            var fallbackLocation = PhotonProtocolHelper.ExtractLocation(parameters, preferredKey);
+            if (fallbackLocation != null)
+            {
+                #if DEBUG
+                Console.WriteLine($"[JoinResponse] Location extracted via fallback: {fallbackLocation}");
+                #endif
+                return fallbackLocation;
+            }
+
+            // Last resort: return placeholder
+            #if DEBUG
+            Console.WriteLine("[JoinResponse] WARNING: Could not extract location from parameters");
+            #endif
+            return "UNKNOWN";
+        }
     }
 }

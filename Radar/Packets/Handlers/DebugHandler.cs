@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Albion.Network;
+using VRise.Radar.Packets.Photon;
 
 namespace VRise.Radar.Packets.Handlers
 {
@@ -16,6 +17,8 @@ namespace VRise.Radar.Packets.Handlers
             try
             {
                 eventLogFile = new StreamWriter("event_structures.txt", false) { AutoFlush = true };
+                eventLogFile.WriteLine($"=== DebugHandler Initialized at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
+                eventLogFile.WriteLine("Waiting for Albion Online packets...\n");
                 Console.WriteLine("[DebugHandler] Initialized - logging to event_structures.txt");
             }
             catch (Exception ex)
@@ -28,64 +31,55 @@ namespace VRise.Radar.Packets.Handlers
         {
             // just for debugging, i will not remove this
 
+            // 診斷：確認 DebugHandler 是否被調用
+            Console.WriteLine($"[DebugHandler] OnHandleAsync called - packet type: {packet?.GetType().Name ?? "null"}");
+
             if (packet is ResponsePacket response)
             {
-                if (response.Parameters.TryGetValue(253, out var code))
+                // Use safe type conversion with endianness normalization
+                if (PhotonProtocolHelper.TryGetOperationCode(response.Parameters, out var opCode))
                 {
-                    // Console.WriteLine("Response: " + code); // 註解避免控制台太亂
+                    Console.WriteLine($"[DebugHandler] Response: OpCode={opCode}");
                 }
                 else
                 {
-                    ;
+                    Console.WriteLine("[DebugHandler] Response: No valid OpCode (253) found");
                 }
             }
             else if (packet is RequestPacket request)
             {
-                if (request.Parameters.TryGetValue(253, out var code))
+                // Use safe type conversion with endianness normalization
+                if (PhotonProtocolHelper.TryGetOperationCode(request.Parameters, out var opCode))
                 {
-                    // Console.WriteLine("Request: " + code); // 註解避免控制台太亂
+                    Console.WriteLine($"[DebugHandler] Request: OpCode={opCode}");
                 }
                 else
                 {
-                    ;
+                    Console.WriteLine("[DebugHandler] Request: No valid OpCode (253) found");
                 }
             }
             else if (packet is EventPacket @event)
             {
-                if (@event.Parameters.TryGetValue(252, out var code))
+                // Use safe type conversion with endianness normalization
+                if (!PhotonProtocolHelper.TryGetEventCode(@event.Parameters, out var eventCode))
                 {
-                    int eventCode;
-                    try
-                    {
-                        eventCode = Convert.ToInt32(code);
-                    }
-                    catch (FormatException ex)
-                    {
-                        // Handle case where code is not a simple numeric type
-                        Console.WriteLine($"[DebugHandler] FormatException - Event parameter 252 has unexpected type: {code?.GetType().Name ?? "null"}, Value: {code}");
-                        return Task.CompletedTask;
-                    }
-                    catch (InvalidCastException ex)
-                    {
-                        Console.WriteLine($"[DebugHandler] InvalidCastException - Event parameter 252 type: {code?.GetType().Name ?? "null"}, Value: {code}");
-                        return Task.CompletedTask;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[DebugHandler] Unexpected exception: {ex.GetType().Name} - {ex.Message}");
-                        return Task.CompletedTask;
-                    }
+                    Console.WriteLine($"[DebugHandler] Event: Could not extract event code (252)");
+                    return Task.CompletedTask;
+                }
 
-                    // 當切換地圖時，詳細記錄所有事件的參數結構
-                    if (!loggedEvents.Contains(eventCode))
-                    {
-                        loggedEvents.Add(eventCode);
+                // 當切換地圖時，詳細記錄所有事件的參數結構
+                if (!loggedEvents.Contains((int)eventCode))
+                {
+                    loggedEvents.Add((int)eventCode);
 
-                        // 列出所有參數的類型和長度（只寫到檔案，不輸出到Console）
-                        if (eventLogFile != null)
+                    // 列出所有參數的類型和長度（只寫到檔案，不輸出到Console）
+                    if (eventLogFile != null)
+                    {
+                        try
                         {
                             eventLogFile.WriteLine($"\n[EventStructure] Event {eventCode}:");
-                            // Console.WriteLine($"[EventStructure] Event {eventCode} logged"); // 註解避免控制台太亂
+                            eventLogFile.Flush(); // 強制刷新
+                            Console.WriteLine($"[DebugHandler] New Event Code: {eventCode} - Writing to event_structures.txt");
 
                             foreach (var kvp in @event.Parameters)
                             {
@@ -115,7 +109,17 @@ namespace VRise.Radar.Packets.Handlers
                                 }
                                 eventLogFile.WriteLine($"  Key {kvp.Key}: {valueInfo}");
                             }
+                        eventLogFile.Flush(); // 最終刷新確保寫入
+                        Console.WriteLine($"[DebugHandler] Event {eventCode} structure written successfully");
                         }
+                        catch (Exception writeEx)
+                        {
+                            Console.WriteLine($"[DebugHandler] Failed to write event {eventCode}: {writeEx.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[DebugHandler] eventLogFile is NULL! Cannot write event {eventCode}");
                     }
                 }
             }

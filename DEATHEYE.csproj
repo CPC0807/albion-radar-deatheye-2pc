@@ -213,6 +213,10 @@
     <Compile Include="Radar\Packets\Handlers\DebugHandler.cs" />
     <Compile Include="Radar\Packets\Handlers\KeySyncEvent.cs" />
     <Compile Include="Radar\Packets\Handlers\KeySyncEventHandler.cs" />
+    <Compile Include="Radar\Packets\Photon\PhotonParser.cs" />
+    <Compile Include="Radar\Packets\Photon\PhotonProtocolHelper.cs" />
+    <Compile Include="Radar\Packets\Photon\Protocol18Deserializer.cs" />
+    <Compile Include="Radar\Packets\Photon\Protocol18ReceiverBridge.cs" />
     <Compile Include="Radar\Packets\Sniffer\NetworkConfig.cs" />
     <Compile Include="ResponseObj\MobInfo.cs" />
     <Compile Include="ResponseObj\PacketIndexes.cs" />
