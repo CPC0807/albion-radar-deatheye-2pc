@@ -44,7 +44,21 @@
       "Bash(if [ -f \"rebuild-quick.bat\" ])",
       "Bash(then cat rebuild-quick.bat)",
       "Bash(\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe\" DEATHEYE.sln /t:Build /p:Configuration=Debug /p:Platform=AnyCPU /nologo)",
-      "Bash(cmd /c \"\"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe\"\" DEATHEYE.sln /t:Build /p:Configuration=Debug /p:Platform=AnyCPU /nologo\")"
+      "Bash(cmd /c \"\"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe\"\" DEATHEYE.sln /t:Build /p:Configuration=Debug /p:Platform=AnyCPU /nologo\")",
+      "Bash(ildasm /text /nobar packages/Albion.Network.5.0.1/lib/netstandard2.0/Albion.Network.dll)",
+      "Bash(powershell -Command '[System.Reflection.Assembly]::LoadFrom\\('\\\\''__TRACKED_VAR__\\\\packages\\\\Albion.Network.5.0.1\\\\lib\\\\netstandard2.0\\\\Albion.Network.dll'\\\\''\\).GetTypes\\(\\) | ForEach-Object { Write-Output \\('\\\\''TYPE: '\\\\'' + $_.FullName\\); $_.GetMethods\\(\\) | ForEach-Object { Write-Output \\('\\\\''  METHOD: '\\\\'' + $_.ToString\\(\\)\\) }; $_.GetFields\\([System.Reflection.BindingFlags]'\\\\''Public,NonPublic,Instance,Static'\\\\''\\) | ForEach-Object { Write-Output \\('\\\\''  FIELD: '\\\\'' + $_.ToString\\(\\)\\) } }')",
+      "Bash(powershell -Command '$asm = [System.Reflection.Assembly]::LoadFrom\\('\\\\''C:\\\\test\\\\ubuntu\\\\shared\\\\code\\\\albion-radar-deatheye-2pc\\\\packages\\\\Albion.Network.5.0.1\\\\lib\\\\netstandard2.0\\\\Albion.Network.dll'\\\\''\\); $asm.GetTypes\\(\\) | ForEach-Object { Write-Output \\('\\\\''TYPE: '\\\\'' + $_.FullName\\) }')",
+      "Bash(powershell -Command '$asm = [System.Reflection.Assembly]::LoadFrom\\('\\\\''C:\\\\test\\\\ubuntu\\\\shared\\\\code\\\\albion-radar-deatheye-2pc\\\\bin\\\\Debug\\\\Albion.Network.dll'\\\\''\\); try { $types = $asm.GetTypes\\(\\) } catch [System.Reflection.ReflectionTypeLoadException] { $types = $_.Exception.Types | Where-Object { $_ -ne $null } }; $types | ForEach-Object { Write-Output \\('\\\\''TYPE: '\\\\'' + $_.FullName\\) }')",
+      "Bash(powershell -Command '$asm = [System.Reflection.Assembly]::LoadFrom\\('\\\\''C:\\\\test\\\\ubuntu\\\\shared\\\\code\\\\albion-radar-deatheye-2pc\\\\bin\\\\Debug\\\\Albion.Network.dll'\\\\''\\); foreach \\($tname in @\\('\\\\''Albion.Network.AlbionParser'\\\\'','\\\\''Albion.Network.ReceiverBuilder'\\\\'','\\\\''Albion.Network.HandlersCollection'\\\\'','\\\\''Albion.Network.EventPacket'\\\\'','\\\\''Albion.Network.RequestPacket'\\\\'','\\\\''Albion.Network.ResponsePacket'\\\\'','\\\\''Albion.Network.PacketHandler *)",
+      "Bash(dotnet tool *)",
+      "Bash(ilspycmd \"C:\\\\test\\\\ubuntu\\\\shared\\\\code\\\\albion-radar-deatheye-2pc\\\\packages\\\\Albion.Network.5.0.1\\\\lib\\\\netstandard2.0\\\\Albion.Network.dll\")",
+      "Bash(dotnet --list-runtimes)",
+      "Bash(cat)",
+      "Bash(mkdir -p /c/temp)",
+      "Read(//c//**)",
+      "Bash(mkdir -p /c/temp/inspect)",
+      "Read(//c/temp/**)",
+      "Bash(dotnet run *)"
     ],
     "deny": [],
     "ask": []

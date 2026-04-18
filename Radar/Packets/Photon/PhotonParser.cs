@@ -3,13 +3,18 @@ using PhotonPackageParser;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace VRise.Radar.Packets.Photon
 {
     /// <summary>
-    /// Photon Protocol 18 packet wrapper
-    /// Parses raw Photon UDP/TCP payloads using Protocol 18 deserialization
-    /// Then creates compatible packets for the existing Albion.Network IPhotonReceiver
+    /// Photon Protocol 18 packet wrapper.
+    /// Parses raw Photon UDP/TCP payloads using Protocol 18 deserialization,
+    /// then dispatches directly to the AlbionParser's OnEvent/OnRequest/OnResponse
+    /// via reflection — bypassing Albion.Network's own Protocol 16 byte parser
+    /// (which cannot read Protocol 18 data).
     /// Reference: https://github.com/ao-data/albiondata-client/blob/master/client/photon/parser.go
     /// </summary>
     public class PhotonParser
@@ -30,20 +35,72 @@ namespace VRise.Radar.Packets.Photon
         private const byte MsgResponseAlt = 7;  // Some Albion builds use type 7 for response
         private const byte MsgEncrypted = 131;
 
+        // Cap to avoid unbounded growth if fragment reassembly never completes for some sequences.
+        private const int MaxPendingSegments = 256;
         private readonly Dictionary<int, SegmentedPackage> pendingSegments = new Dictionary<int, SegmentedPackage>();
         private readonly IPhotonReceiver photonReceiver;
+
+        // We bypass AlbionParser.OnEvent/OnRequest/OnResponse entirely — those call
+        // ParseEventCode/ParseOperationCode, which expect parameters[252]/[253] to be
+        // an Int16 produced by the built-in Protocol 16 deserializer. Protocol 18's
+        // deserializer produces different boxed types, so those casts throw.
+        //
+        // Instead, we construct EventPacket/RequestPacket/ResponsePacket ourselves and
+        // push them straight into AlbionParser.handlers.HandleAsync(), matching what
+        // OnEvent/OnRequest/OnResponse do after parsing the code.
+        private readonly object handlersCollection;
+        private readonly MethodInfo handlersHandleAsyncMethod;
+        private readonly ConstructorInfo eventPacketCtor;
+        private readonly ConstructorInfo requestPacketCtor;
+        private readonly ConstructorInfo responsePacketCtor;
 
         public Action OnEncrypted { get; set; }
 
         public PhotonParser(IPhotonReceiver photonReceiver)
         {
             this.photonReceiver = photonReceiver ?? throw new ArgumentNullException(nameof(photonReceiver));
+
+            var parserType = photonReceiver.GetType();
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            // Locate AlbionParser.handlers (HandlersCollection) by field type/name.
+            FieldInfo handlersField = null;
+            for (var t = parserType; t != null && t != typeof(object); t = t.BaseType)
+            {
+                handlersField = t.GetField("handlers", bindingFlags);
+                if (handlersField != null) break;
+            }
+            if (handlersField == null)
+                throw new InvalidOperationException("PhotonParser: AlbionParser.handlers field not found.");
+
+            handlersCollection = handlersField.GetValue(photonReceiver)
+                ?? throw new InvalidOperationException("PhotonParser: AlbionParser.handlers is null.");
+
+            handlersHandleAsyncMethod = handlersCollection.GetType().GetMethod(
+                "HandleAsync", bindingFlags, null, new[] { typeof(object) }, null);
+            if (handlersHandleAsyncMethod == null)
+                throw new InvalidOperationException("PhotonParser: HandlersCollection.HandleAsync(object) not found.");
+
+            var asm = typeof(IPhotonReceiver).Assembly;
+            var eventPacketType = asm.GetType("Albion.Network.EventPacket")
+                ?? throw new InvalidOperationException("Albion.Network.EventPacket not found.");
+            var requestPacketType = asm.GetType("Albion.Network.RequestPacket")
+                ?? throw new InvalidOperationException("Albion.Network.RequestPacket not found.");
+            var responsePacketType = asm.GetType("Albion.Network.ResponsePacket")
+                ?? throw new InvalidOperationException("Albion.Network.ResponsePacket not found.");
+
+            var ctorArgs = new[] { typeof(short), typeof(Dictionary<byte, object>) };
+            eventPacketCtor = eventPacketType.GetConstructor(ctorArgs)
+                ?? throw new InvalidOperationException("EventPacket(short, Dictionary) ctor not found.");
+            requestPacketCtor = requestPacketType.GetConstructor(ctorArgs)
+                ?? throw new InvalidOperationException("RequestPacket(short, Dictionary) ctor not found.");
+            responsePacketCtor = responsePacketType.GetConstructor(ctorArgs)
+                ?? throw new InvalidOperationException("ResponsePacket(short, Dictionary) ctor not found.");
         }
 
         /// <summary>
-        /// Processes a raw Photon UDP/TCP payload
-        /// Parses with Protocol 18, then forwards to IPhotonReceiver
-        /// Returns true if the packet header was valid
+        /// Processes a raw Photon UDP/TCP payload.
+        /// Returns true if the packet header was valid.
         /// </summary>
         public bool ReceivePacket(byte[] payload)
         {
@@ -57,12 +114,9 @@ namespace VRise.Radar.Packets.Photon
                 int commandCount = payload[offset++];
                 offset += 8; // skip timestamp (4) + challenge (4)
 
-                Console.WriteLine($"[PhotonParser] Received packet: flags={flags}, commands={commandCount}, length={payload.Length}");
-
                 // Encrypted packet
                 if (flags == 1)
                 {
-                    Console.WriteLine($"[PhotonParser] Encrypted packet - skipping");
                     OnEncrypted?.Invoke();
                     return false;
                 }
@@ -136,20 +190,15 @@ namespace VRise.Radar.Packets.Photon
             if (cmdLen < 2 || offset + cmdLen > src.Length)
                 return;
 
-            // byte signalByte = src[offset];
-            offset++;
+            offset++; // signalByte
             byte msgType = src[offset++];
             cmdLen -= 2;
-
-            Console.WriteLine($"[PhotonParser] HandleSendReliable: msgType={msgType}, cmdLen={cmdLen}");
 
             if (offset + cmdLen > src.Length)
                 return;
 
-            // Check for encrypted message
             if (msgType == MsgEncrypted)
             {
-                Console.WriteLine($"[PhotonParser] Encrypted message - skipping");
                 OnEncrypted?.Invoke();
                 return;
             }
@@ -157,259 +206,231 @@ namespace VRise.Radar.Packets.Photon
             var data = new byte[cmdLen];
             Array.Copy(src, offset, data, 0, cmdLen);
 
-            // Parse with Protocol 18 and reconstruct packet for IPhotonReceiver
+            RecordMsgType(msgType);
+
             try
             {
-                var reconstructedPacket = ReconstructPacketForReceiver(msgType, data);
-                if (reconstructedPacket != null)
-                {
-                    Console.WriteLine($"[PhotonParser] Forwarding reconstructed packet to receiver (length={reconstructedPacket.Length})");
-                    // Pass the reconstructed packet to the old receiver
-                    photonReceiver.ReceivePacket(reconstructedPacket);
-                }
-                else
-                {
-                    Console.WriteLine($"[PhotonParser] ReconstructPacketForReceiver returned null");
-                }
+                DispatchMessage(msgType, data);
+            }
+            catch (TargetInvocationException tie) when (tie.InnerException != null)
+            {
+                var inner = tie.InnerException;
+                Console.WriteLine($"[PhotonParser] Handler threw ({inner.GetType().Name}) on msgType={msgType}: {inner.Message}");
+                Console.WriteLine($"[PhotonParser] StackTrace: {inner.StackTrace}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PhotonParser] Error reconstructing packet: {ex.Message}");
+                Console.WriteLine($"[PhotonParser] Error dispatching msgType={msgType}: {ex.Message}");
                 Console.WriteLine($"[PhotonParser] StackTrace: {ex.StackTrace}");
             }
         }
 
         /// <summary>
-        /// Reconstructs a packet that's compatible with the old Protocol 16 receiver
-        /// by parsing Protocol 18 data and converting parameter table
+        /// Parses Protocol 18 payload for the given message type, constructs the matching
+        /// Albion.Network packet object, and pushes it directly into the handler pipeline —
+        /// bypassing AlbionParser.OnEvent/OnRequest/OnResponse (which mis-parse Protocol 18
+        /// parameters[252/253] types).
         /// </summary>
-        private byte[] ReconstructPacketForReceiver(byte msgType, byte[] data)
+        private void DispatchMessage(byte msgType, byte[] data)
         {
-            try
+            if (msgType == MsgRequest)
             {
-                using (var ms = new MemoryStream())
-                using (var writer = new BinaryWriter(ms))
+                if (data.Length < 1)
+                    return;
+
+                byte envelopeByte = data[0];
+                var parameters = Protocol18Deserializer.DeserializeParameterTable(SubArray(data, 1));
+
+                // The real operation code lives in parameters[253]. data[0] is just the
+                // Photon envelope byte (typically 0/1) and is NOT the app-level opCode.
+                short opCode = ExtractCode(parameters, 253, envelopeByte);
+                DumpParamTypesOnce("Request", (byte)opCode, parameters);
+
+                var packet = requestPacketCtor.Invoke(new object[] { opCode, parameters });
+                ObserveHandlerTask(handlersHandleAsyncMethod.Invoke(handlersCollection, new[] { packet }),
+                    $"Request OpCode={opCode}", parameters);
+            }
+            else if (msgType == MsgResponse || msgType == MsgResponseAlt)
+            {
+                if (data.Length < 3)
+                    return;
+
+                byte envelopeByte = data[0];
+
+                // ResponsePacket stores only OperationCode and Parameters; returnCode and
+                // debugMessage are not exposed on the packet, but we still need to advance
+                // past them to reach the parameter table.
+                int offset = 3;
+
+                if (offset < data.Length)
                 {
-                    // Write message type
-                    writer.Write(msgType);
-
-                    if (msgType == MsgRequest)
+                    byte debugType = data[offset++];
+                    using (var stream = new MemoryStream(data, offset, data.Length - offset))
                     {
-                        if (data.Length < 1)
+                        try
                         {
-                            Console.WriteLine($"[PhotonParser] Request data too short: {data.Length}");
-                            return null;
+                            DeserializeSingle(stream, debugType);
+                            offset += (int)stream.Position;
                         }
-
-                        byte opCode = data[0];
-                        Console.WriteLine($"[PhotonParser] Parsing Request opCode={opCode}");
-
-                        var parameters = Protocol18Deserializer.DeserializeParameterTable(SubArray(data, 1));
-                        Console.WriteLine($"[PhotonParser] Request parsed: {parameters.Count} parameters");
-
-                        // Ensure params[253] contains the operation code
-                        if (!parameters.ContainsKey(253))
+                        catch
                         {
-                            parameters[253] = (int)opCode;
-                        }
-
-                        // Write opCode
-                        writer.Write(opCode);
-
-                        // Write parameter count and parameters
-                        WriteParameterTable(writer, parameters);
-                }
-                else if (msgType == MsgResponse || msgType == MsgResponseAlt)
-                {
-                    if (data.Length < 3)
-                        return null;
-
-                    byte opCode = data[0];
-                    short returnCode = (short)(data[1] | (data[2] << 8));
-
-                    int offset = 3;
-                    string debugMessage = "";
-
-                    // Read debug message if present
-                    if (offset < data.Length)
-                    {
-                        byte debugType = data[offset++];
-                        using (var stream = new MemoryStream(data, offset, data.Length - offset))
-                        {
-                            try
-                            {
-                                var debugObj = DeserializeSingle(stream, debugType);
-                                if (debugObj is string str)
-                                {
-                                    debugMessage = str;
-                                }
-                                offset += (int)stream.Position;
-                            }
-                            catch
-                            {
-                                // If debug message parsing fails, just skip it
-                            }
+                            // ignore malformed debug message
                         }
                     }
-
-                    var parameters = Protocol18Deserializer.DeserializeParameterTable(SubArray(data, offset));
-
-                    // Ensure params[253] contains the operation code
-                    if (!parameters.ContainsKey(253))
-                    {
-                        parameters[253] = (int)opCode;
-                    }
-
-                    // Write opCode, returnCode, debugMessage
-                    writer.Write(opCode);
-                    writer.Write(returnCode);
-                    writer.Write((byte)(string.IsNullOrEmpty(debugMessage) ? 0 : 1));
-                    if (!string.IsNullOrEmpty(debugMessage))
-                    {
-                        WriteString(writer, debugMessage);
-                    }
-
-                    // Write parameters
-                    WriteParameterTable(writer, parameters);
-                }
-                else if (msgType == MsgEvent)
-                {
-                    if (data.Length < 1)
-                        return null;
-
-                    byte code = data[0];
-                    var parameters = Protocol18Deserializer.DeserializeParameterTable(SubArray(data, 1));
-
-                    // Ensure params[252] contains the event code
-                    if (!parameters.ContainsKey(252))
-                    {
-                        parameters[252] = (int)code;
-                    }
-
-                    // Write event code
-                    writer.Write(code);
-
-                    // Write parameters
-                    WriteParameterTable(writer, parameters);
                 }
 
-                return ms.ToArray();
-            }
-        }
+                var parameters = Protocol18Deserializer.DeserializeParameterTable(SubArray(data, offset));
+                short opCode = ExtractCode(parameters, 253, envelopeByte);
+                DumpParamTypesOnce("Response", (byte)opCode, parameters);
 
-        private void WriteParameterTable(BinaryWriter writer, Dictionary<byte, object> parameters)
-        {
-            writer.Write((byte)parameters.Count);
+                var packet = responsePacketCtor.Invoke(new object[] { opCode, parameters });
+                ObserveHandlerTask(handlersHandleAsyncMethod.Invoke(handlersCollection, new[] { packet }),
+                    $"Response OpCode={opCode}", parameters);
+            }
+            else if (msgType == MsgEvent)
+            {
+                if (data.Length < 1)
+                    return;
 
-            foreach (var kvp in parameters)
-            {
-                writer.Write(kvp.Key);
-                WriteValue(writer, kvp.Value);
-            }
-        }
+                byte envelopeByte = data[0];
+                var parameters = Protocol18Deserializer.DeserializeParameterTable(SubArray(data, 1));
 
-        private void WriteValue(BinaryWriter writer, object value)
-        {
-            if (value == null)
-            {
-                writer.Write((byte)42); // Null type
-                return;
-            }
+                // The real event code lives in parameters[252]. data[0] is only the
+                // Photon envelope byte — overwriting params[252] with it (as the previous
+                // bypass did) destroyed the real code and caused every event to get
+                // routed to whatever handler matched data[0] (1=Leave, 3=Move), while
+                // mobs / harvestables / etc. never dispatched.
+                short eventCode = ExtractCode(parameters, 252, envelopeByte);
+                DumpParamTypesOnce("Event", (byte)eventCode, parameters);
 
-            Type t = value.GetType();
-
-            if (t == typeof(bool))
-            {
-                writer.Write((byte)2); // Boolean
-                writer.Write((bool)value);
-            }
-            else if (t == typeof(byte))
-            {
-                writer.Write((byte)3); // Byte
-                writer.Write((byte)value);
-            }
-            else if (t == typeof(short))
-            {
-                writer.Write((byte)4); // Short
-                writer.Write((short)value);
-            }
-            else if (t == typeof(int))
-            {
-                writer.Write((byte)105); // Int32
-                writer.Write((int)value);
-            }
-            else if (t == typeof(long))
-            {
-                writer.Write((byte)108); // Long
-                writer.Write((long)value);
-            }
-            else if (t == typeof(float))
-            {
-                writer.Write((byte)102); // Float
-                writer.Write((float)value);
-            }
-            else if (t == typeof(double))
-            {
-                writer.Write((byte)100); // Double
-                writer.Write((double)value);
-            }
-            else if (t == typeof(string))
-            {
-                writer.Write((byte)115); // String
-                WriteString(writer, (string)value);
-            }
-            else if (t == typeof(byte[]))
-            {
-                byte[] arr = (byte[])value;
-                writer.Write((byte)120); // ByteArray
-                writer.Write(arr.Length);
-                writer.Write(arr);
-            }
-            else if (t.IsArray)
-            {
-                Array arr = (Array)value;
-                writer.Write((byte)121); // Array
-                writer.Write((short)arr.Length);
-                foreach (var item in arr)
-                {
-                    WriteValue(writer, item);
-                }
-            }
-            else if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>))
-            {
-                writer.Write((byte)68); // Dictionary
-                var dict = value as System.Collections.IDictionary;
-                writer.Write((short)dict.Count);
-                foreach (System.Collections.DictionaryEntry entry in dict)
-                {
-                    WriteValue(writer, entry.Key);
-                    WriteValue(writer, entry.Value);
-                }
+                var packet = eventPacketCtor.Invoke(new object[] { eventCode, parameters });
+                ObserveHandlerTask(handlersHandleAsyncMethod.Invoke(handlersCollection, new[] { packet }),
+                    $"Event code={eventCode}", parameters);
             }
             else
             {
-                // Unknown type - write as null
-                writer.Write((byte)42);
+                LogUnknownMsgType(msgType, data);
             }
         }
 
-        private void WriteString(BinaryWriter writer, string str)
+        // Extracts the real app-level event/operation code from the parameter table.
+        // Photon stores it under key 252 (events) / 253 (requests/responses), typed as Int16
+        // by the Protocol 18 deserializer. Falls back to the envelope byte if missing or
+        // unreadable so we still make progress (and the fallback will simply miss handlers).
+        private static short ExtractCode(Dictionary<byte, object> parameters, byte key, byte envelopeByte)
         {
-            if (string.IsNullOrEmpty(str))
+            if (parameters.TryGetValue(key, out var v) && v != null)
             {
-                writer.Write((short)0);
+                if (v is short s) return s;
+                if (v is ushort us) return (short)us;
+                if (v is byte b) return b;
+                if (v is sbyte sb) return sb;
+                if (v is int i) return (short)i;
+                if (v is uint ui) return (short)ui;
+                if (v is long l) return (short)l;
             }
-            else
+            return envelopeByte;
+        }
+
+        // For each (kind, code) seen for the first time, dump parameter key -> type map so
+        // we can identify which Protocol 18 fields are being delivered as typed arrays
+        // (byte[], int[], etc.) instead of the scalars that handlers expect.
+        private readonly HashSet<string> _dumpedCodes = new HashSet<string>();
+        private void DumpParamTypesOnce(string kind, byte code, Dictionary<byte, object> parameters)
+        {
+            var tag = kind + "/" + code;
+            if (!_dumpedCodes.Add(tag)) return;
+
+            var parts = new List<string>();
+            foreach (var kvp in parameters.OrderBy(p => p.Key))
             {
-                var bytes = System.Text.Encoding.UTF8.GetBytes(str);
-                writer.Write((short)bytes.Length);
-                writer.Write(bytes);
+                var typeName = kvp.Value?.GetType().Name ?? "null";
+                if (kvp.Value is Array arr)
+                    typeName += $"[{arr.Length}]";
+                parts.Add($"{kvp.Key}:{typeName}");
+            }
+            Console.WriteLine($"[PhotonParser] First {kind} code={code} params: {string.Join(", ", parts)}");
+        }
+
+        private static void ObserveHandlerTask(object taskObj, string tag, Dictionary<byte, object> parameters)
+        {
+            if (taskObj is Task task)
+            {
+                task.ContinueWith(t =>
+                {
+                    if (t.Exception == null) return;
+
+                    Console.WriteLine($"[PhotonParser] Handler faulted ({tag}):");
+
+                    // Dump parameter snapshot at fault time — handlers may have mutated it,
+                    // but this is our best window into what the constructor saw.
+                    if (parameters != null)
+                    {
+                        var parts = new List<string>();
+                        foreach (var kvp in parameters.OrderBy(p => p.Key))
+                        {
+                            var typeName = kvp.Value?.GetType().Name ?? "null";
+                            if (kvp.Value is Array arr) typeName += $"[{arr.Length}]";
+                            parts.Add($"{kvp.Key}:{typeName}");
+                        }
+                        Console.WriteLine($"  params: {string.Join(", ", parts)}");
+                    }
+
+                    int depth = 0;
+                    for (Exception cur = t.Exception; cur != null; cur = cur.InnerException, depth++)
+                    {
+                        var indent = new string(' ', depth * 2);
+                        Console.WriteLine($"{indent}[{depth}] {cur.GetType().FullName}: {cur.Message}");
+                        if (!string.IsNullOrEmpty(cur.StackTrace))
+                        {
+                            var lines = cur.StackTrace.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                            for (int i = 0; i < Math.Min(lines.Length, 6); i++)
+                                Console.WriteLine($"{indent}   {lines[i].TrimEnd()}");
+                            if (lines.Length > 6)
+                                Console.WriteLine($"{indent}   ... ({lines.Length - 6} more frames)");
+                        }
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+            }
+        }
+
+        private readonly HashSet<byte> _loggedUnknownMsgTypes = new HashSet<byte>();
+        private void LogUnknownMsgType(byte msgType, byte[] data)
+        {
+            if (_loggedUnknownMsgTypes.Add(msgType))
+            {
+                var preview = BitConverter.ToString(data, 0, Math.Min(16, data.Length));
+                Console.WriteLine($"[PhotonParser] Unknown msgType={msgType} len={data.Length} first16={preview}");
+            }
+        }
+
+        // Periodic msgType histogram so we can see whether Responses (type 3 / 7) ever arrive.
+        private readonly Dictionary<byte, long> _msgTypeCounts = new Dictionary<byte, long>();
+        private long _msgTypeTotal;
+        private void RecordMsgType(byte msgType)
+        {
+            _msgTypeCounts.TryGetValue(msgType, out var count);
+            _msgTypeCounts[msgType] = count + 1;
+            _msgTypeTotal++;
+
+            // First time each msgType shows up, shout about it.
+            if (count == 0)
+            {
+                Console.WriteLine($"[PhotonParser] First occurrence of msgType={msgType} (total packets so far={_msgTypeTotal})");
+            }
+
+            if (_msgTypeTotal % 100 == 0)
+            {
+                var parts = new List<string>();
+                foreach (var kvp in _msgTypeCounts)
+                    parts.Add($"{kvp.Key}={kvp.Value}");
+                Console.WriteLine($"[PhotonParser] msgType histogram (total={_msgTypeTotal}): {string.Join(", ", parts)}");
             }
         }
 
         private object DeserializeSingle(MemoryStream stream, byte typeCode)
         {
-            // Create a small wrapper to deserialize a single value
+            // Wrap a single value in a fake 1-entry parameter table so the shared deserializer handles it.
             var buffer = new byte[stream.Length - stream.Position + 3];
             buffer[0] = 1; // count = 1
             buffer[1] = 0; // key = 0
@@ -422,13 +443,10 @@ namespace VRise.Radar.Packets.Photon
 
         private int HandleSendFragment(byte[] src, int offset, int cmdLen)
         {
-            if (offset + 20 > src.Length) // Fragment header is 20 bytes
+            if (offset + 20 > src.Length)
                 return offset + cmdLen;
 
-            // Fragment header: startSeq(4) fragCount(4) fragNum(4) totalLen(4) fragOffset(4)
             int startSeq = (src[offset] << 24) | (src[offset + 1] << 16) | (src[offset + 2] << 8) | src[offset + 3];
-            // int fragCount = (src[offset + 4] << 24) | (src[offset + 5] << 16) | (src[offset + 6] << 8) | src[offset + 7];
-            // int fragNum = (src[offset + 8] << 24) | (src[offset + 9] << 16) | (src[offset + 10] << 8) | src[offset + 11];
             int totalLen = (src[offset + 12] << 24) | (src[offset + 13] << 16) | (src[offset + 14] << 8) | src[offset + 15];
             int fragOffset = (src[offset + 16] << 24) | (src[offset + 17] << 16) | (src[offset + 18] << 8) | src[offset + 19];
 
@@ -437,6 +455,18 @@ namespace VRise.Radar.Packets.Photon
 
             if (!pendingSegments.TryGetValue(startSeq, out var package))
             {
+                if (pendingSegments.Count >= MaxPendingSegments)
+                {
+                    // Drop the oldest incomplete reassembly buffer to bound memory.
+                    var oldestKey = default(int);
+                    var first = true;
+                    foreach (var key in pendingSegments.Keys)
+                    {
+                        if (first) { oldestKey = key; first = false; }
+                    }
+                    pendingSegments.Remove(oldestKey);
+                }
+
                 package = new SegmentedPackage
                 {
                     TotalLength = totalLen,
@@ -446,14 +476,12 @@ namespace VRise.Radar.Packets.Photon
                 pendingSegments[startSeq] = package;
             }
 
-            // Copy fragment data
             int copyLen = Math.Min(cmdLen, package.Payload.Length - fragOffset);
             if (copyLen > 0 && offset + copyLen <= src.Length)
             {
                 Array.Copy(src, offset, package.Payload, fragOffset, copyLen);
                 package.BytesWritten += copyLen;
 
-                // Check if complete
                 if (package.BytesWritten >= package.TotalLength)
                 {
                     HandleSendReliable(package.Payload, 0, package.TotalLength);

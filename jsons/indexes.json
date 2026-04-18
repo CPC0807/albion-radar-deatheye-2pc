@@ -3,7 +3,7 @@
 	"JoinResponse": 2,
 	"Move": 3,
 	"HealthUpdateEvent": 6,
-	"MoveRequest": 21,
+	"MoveRequest": 22,
 	"NewCharacter": 29,
 	"ChangeCluster": 35,
 	"NewHarvestableList": 39,
