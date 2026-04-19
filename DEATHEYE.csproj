@@ -322,6 +322,7 @@
     </Compile>
     <Compile Include="Tools\Diagnostics.cs" />
     <Compile Include="Tools\KeyboardHook.cs" />
+    <Compile Include="Tools\ParseErrorLogger.cs" />
     <Compile Include="Tools\Pathfinder.cs" />
     <Compile Include="Tools\Utility.cs" />
     <Page Include="Design\Lang\lang.ru-RU.xaml">

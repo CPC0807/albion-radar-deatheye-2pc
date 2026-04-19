@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using VRise.Tools;
 
 namespace VRise.Radar.Packets.Photon
 {
@@ -32,7 +33,11 @@ namespace VRise.Radar.Packets.Photon
         private const byte MsgRequest = 2;
         private const byte MsgResponse = 3;
         private const byte MsgEvent = 4;
-        private const byte MsgResponseAlt = 7;  // Some Albion builds use type 7 for response
+        // msgType 7 is Photon's InternalOperationResponse (ping/pong, etc.), not an
+        // Albion application-level response. Its payload layout differs from MsgResponse,
+        // so parsing it as a response produces garbage and EndOfStream on the param table.
+        // The reference Go client (albiondata-client) ignores type 7 entirely; we do too.
+        private const byte MsgInternalOpResponse = 7;
         private const byte MsgEncrypted = 131;
 
         // Cap to avoid unbounded growth if fragment reassembly never completes for some sequences.
@@ -126,7 +131,8 @@ namespace VRise.Radar.Packets.Photon
                     offset = HandleCommand(payload, offset);
                     if (offset < 0)
                     {
-                        Console.WriteLine($"[PhotonParser] HandleCommand failed at command {i}");
+                        ParseErrorLogger.LogWarning("PhotonParser",
+                            $"HandleCommand failed at command {i} (commandCount={commandCount}, len={payload.Length})");
                         return false;
                     }
                 }
@@ -135,8 +141,7 @@ namespace VRise.Radar.Packets.Photon
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PhotonParser] Error parsing packet: {ex.Message}");
-                Console.WriteLine($"[PhotonParser] StackTrace: {ex.StackTrace}");
+                ParseErrorLogger.Log("PhotonParser.ReceivePacket", ex);
                 return false;
             }
         }
@@ -214,14 +219,18 @@ namespace VRise.Radar.Packets.Photon
             }
             catch (TargetInvocationException tie) when (tie.InnerException != null)
             {
-                var inner = tie.InnerException;
-                Console.WriteLine($"[PhotonParser] Handler threw ({inner.GetType().Name}) on msgType={msgType}: {inner.Message}");
-                Console.WriteLine($"[PhotonParser] StackTrace: {inner.StackTrace}");
+                // Handler/event-constructor threw synchronously through reflection.
+                // Logging it here prevents the sniffer thread from dying when a game
+                // update changes a packet schema.
+                ParseErrorLogger.Log(
+                    $"PhotonParser.DispatchMessage (msgType={msgType})",
+                    tie.InnerException);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PhotonParser] Error dispatching msgType={msgType}: {ex.Message}");
-                Console.WriteLine($"[PhotonParser] StackTrace: {ex.StackTrace}");
+                ParseErrorLogger.Log(
+                    $"PhotonParser.DispatchMessage (msgType={msgType})",
+                    ex);
             }
         }
 
@@ -250,7 +259,13 @@ namespace VRise.Radar.Packets.Photon
                 ObserveHandlerTask(handlersHandleAsyncMethod.Invoke(handlersCollection, new[] { packet }),
                     $"Request OpCode={opCode}", parameters);
             }
-            else if (msgType == MsgResponse || msgType == MsgResponseAlt)
+            else if (msgType == MsgInternalOpResponse)
+            {
+                // Photon internal ping/pong. Shape is not an Albion parameter table —
+                // silently drop to avoid EndOfStream noise.
+                return;
+            }
+            else if (msgType == MsgResponse)
             {
                 if (data.Length < 3)
                     return;
@@ -354,44 +369,21 @@ namespace VRise.Radar.Packets.Photon
 
         private static void ObserveHandlerTask(object taskObj, string tag, Dictionary<byte, object> parameters)
         {
-            if (taskObj is Task task)
+            if (!(taskObj is Task task)) return;
+
+            task.ContinueWith(t =>
             {
-                task.ContinueWith(t =>
+                if (t.Exception == null) return;
+                try
                 {
-                    if (t.Exception == null) return;
-
-                    Console.WriteLine($"[PhotonParser] Handler faulted ({tag}):");
-
-                    // Dump parameter snapshot at fault time — handlers may have mutated it,
-                    // but this is our best window into what the constructor saw.
-                    if (parameters != null)
-                    {
-                        var parts = new List<string>();
-                        foreach (var kvp in parameters.OrderBy(p => p.Key))
-                        {
-                            var typeName = kvp.Value?.GetType().Name ?? "null";
-                            if (kvp.Value is Array arr) typeName += $"[{arr.Length}]";
-                            parts.Add($"{kvp.Key}:{typeName}");
-                        }
-                        Console.WriteLine($"  params: {string.Join(", ", parts)}");
-                    }
-
-                    int depth = 0;
-                    for (Exception cur = t.Exception; cur != null; cur = cur.InnerException, depth++)
-                    {
-                        var indent = new string(' ', depth * 2);
-                        Console.WriteLine($"{indent}[{depth}] {cur.GetType().FullName}: {cur.Message}");
-                        if (!string.IsNullOrEmpty(cur.StackTrace))
-                        {
-                            var lines = cur.StackTrace.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                            for (int i = 0; i < Math.Min(lines.Length, 6); i++)
-                                Console.WriteLine($"{indent}   {lines[i].TrimEnd()}");
-                            if (lines.Length > 6)
-                                Console.WriteLine($"{indent}   ... ({lines.Length - 6} more frames)");
-                        }
-                    }
-                }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
-            }
+                    ParseErrorLogger.Log("PhotonParser.Handler (" + tag + ")",
+                        t.Exception.InnerException ?? t.Exception, parameters);
+                }
+                catch
+                {
+                    // Swallow — logging must never bring down the task scheduler.
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private readonly HashSet<byte> _loggedUnknownMsgTypes = new HashSet<byte>();

@@ -20,7 +20,7 @@ namespace VRise.Radar.Packets.Handlers
             Name = parameters[offsets[1]] as string;
             Guild = parameters.ContainsKey(offsets[2]) ? parameters[offsets[2]] as string : string.Empty;
             Alliance = parameters.ContainsKey(offsets[3]) ? parameters[offsets[3]] as string : string.Empty;
-            Faction = (Faction)parameters[offsets[4]];
+            Faction = (Faction)Convert.ToByte(parameters[offsets[4]]);
             
             EncryptedPosition = parameters[offsets[5]] as byte[];
             Speed = parameters.ContainsKey(offsets[6]) ? (float)parameters[offsets[6]] : 5.5f;

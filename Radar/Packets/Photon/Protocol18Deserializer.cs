@@ -49,6 +49,11 @@ namespace VRise.Radar.Packets.Photon
         private const byte TypeArray = 0x40;
         private const byte CustomTypeSlimBase = 0x80;
 
+        // Sanity cap on any single length field. A real Photon UDP packet is <64 KiB,
+        // so no string / array / dictionary inside it can legitimately be larger.
+        // This stops malformed/unexpected data from driving a 2 GiB allocation.
+        private const int MaxLengthSane = 64 * 1024;
+
         /// <summary>
         /// Deserializes a Protocol 18 parameter table
         /// Wire format: compressed-varint count | (key | typeCode | value)*
@@ -64,7 +69,9 @@ namespace VRise.Radar.Packets.Photon
         private static Dictionary<byte, object> ReadParameterTable(Stream stream)
         {
             int count = (int)ReadCount(stream);
-            var parameters = new Dictionary<byte, object>(count);
+            // Cap defensively — legitimate tables have at most ~256 keys (1 byte key).
+            ValidateLength(count, "ParameterTable");
+            var parameters = new Dictionary<byte, object>(Math.Min(count, 256));
 
             for (int i = 0; i < count && stream.Position < stream.Length; i++)
             {
@@ -192,6 +199,7 @@ namespace VRise.Radar.Packets.Photon
         private static object DeserializeTypedArray(Stream stream, byte elementType)
         {
             int size = (int)ReadCount(stream);
+            ValidateLength(size, "TypedArray");
 
             switch (elementType)
             {
@@ -258,6 +266,7 @@ namespace VRise.Radar.Packets.Photon
         private static object DeserializeNestedArray(Stream stream)
         {
             int size = (int)ReadCount(stream);
+            ValidateLength(size, "NestedArray");
             byte typeCode = (byte)stream.ReadByte();
             var array = new object[size];
             for (int i = 0; i < size; i++)
@@ -270,6 +279,7 @@ namespace VRise.Radar.Packets.Photon
         private static object DeserializeObjectArray(Stream stream)
         {
             int size = (int)ReadCount(stream);
+            ValidateLength(size, "ObjectArray");
             var array = new object[size];
             for (int i = 0; i < size; i++)
             {
@@ -284,6 +294,7 @@ namespace VRise.Radar.Packets.Photon
             byte keyType = (byte)stream.ReadByte();
             byte valueType = (byte)stream.ReadByte();
             int count = (int)ReadCount(stream);
+            ValidateLength(count, "Dictionary");
 
             var dict = new Dictionary<object, object>(count);
 
@@ -324,6 +335,7 @@ namespace VRise.Radar.Packets.Photon
             }
 
             int size = (int)ReadCount(stream);
+            ValidateLength(size, "Custom");
             var data = new byte[size];
             stream.Read(data, 0, size);
 
@@ -374,9 +386,17 @@ namespace VRise.Radar.Packets.Photon
             if (length == 0)
                 return string.Empty;
 
+            ValidateLength(length, "String");
             var bytes = new byte[length];
             stream.Read(bytes, 0, length);
             return Encoding.UTF8.GetString(bytes);
+        }
+
+        private static void ValidateLength(int length, string context)
+        {
+            if (length < 0 || length > MaxLengthSane)
+                throw new InvalidDataException(
+                    $"Protocol18 {context}: implausible length {length} (cap {MaxLengthSane}).");
         }
 
         private static uint ReadCount(Stream stream)
@@ -386,44 +406,96 @@ namespace VRise.Radar.Packets.Photon
 
             while (true)
             {
-                byte b = (byte)stream.ReadByte();
+                int read = stream.ReadByte();
+                if (read < 0)
+                    throw new EndOfStreamException("Protocol18 varint truncated (ReadCount)");
+
+                byte b = (byte)read;
                 result |= (uint)(b & 0x7F) << shift;
 
                 if ((b & 0x80) == 0)
                     break;
 
                 shift += 7;
+                // Guard against malformed data where the high bit stays set forever.
+                if (shift >= 35)
+                    throw new InvalidDataException("Protocol18 varint overflow (ReadCount)");
             }
 
             return result;
         }
 
+        // Protocol 18 compressed int: first byte packs [cont(0x80)|sign(0x40)|6 value bits],
+        // subsequent bytes pack [cont(0x80)|7 value bits]. Result = accumulated × sign.
+        // This is NOT standard LEB128+zigzag; matches albiondata-client/readCompressedInt32.
         private static int ReadCompressedInt32(Stream stream)
         {
-            uint value = ReadCount(stream);
-            // Zig-zag decode: (n >> 1) ^ -(n & 1)
-            return (int)((value >> 1) ^ (-(int)(value & 1)));
+            int result = 0;
+            int shift = 0;
+            int sign = 1;
+
+            while (true)
+            {
+                int read = stream.ReadByte();
+                if (read < 0)
+                    throw new EndOfStreamException("Protocol18 varint truncated (ReadCompressedInt32)");
+
+                byte b = (byte)read;
+
+                if (shift == 0)
+                {
+                    if ((b & 0x40) != 0) sign = -1;
+                    result |= (b & 0x3F);
+                    shift = 6;
+                }
+                else
+                {
+                    result |= (b & 0x7F) << shift;
+                    shift += 7;
+                    if (shift >= 35)
+                        throw new InvalidDataException("Protocol18 varint overflow (ReadCompressedInt32)");
+                }
+
+                if ((b & 0x80) == 0)
+                    break;
+            }
+
+            return result * sign;
         }
 
         private static long ReadCompressedInt64(Stream stream)
         {
-            ulong result = 0;
+            long result = 0;
             int shift = 0;
+            int sign = 1;
 
             while (true)
             {
-                byte b = (byte)stream.ReadByte();
-                result |= (ulong)(b & 0x7F) << shift;
+                int read = stream.ReadByte();
+                if (read < 0)
+                    throw new EndOfStreamException("Protocol18 varint truncated (ReadCompressedInt64)");
+
+                byte b = (byte)read;
+
+                if (shift == 0)
+                {
+                    if ((b & 0x40) != 0) sign = -1;
+                    result |= (long)(b & 0x3F);
+                    shift = 6;
+                }
+                else
+                {
+                    result |= (long)(b & 0x7F) << shift;
+                    shift += 7;
+                    if (shift >= 70)
+                        throw new InvalidDataException("Protocol18 varint overflow (ReadCompressedInt64)");
+                }
 
                 if ((b & 0x80) == 0)
                     break;
-
-                shift += 7;
             }
 
-            // Zig-zag decode: (n >> 1) ^ (-(n & 1))
-            // Convert to signed, then apply XOR
-            return (long)((result >> 1) ^ (ulong)(-(long)(result & 1)));
+            return result * sign;
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Windows;
 using SharpPcap.LibPcap;
 using VRise.Radar.Packets.Photon;
+using VRise.Tools;
 
 namespace VRise.Radar.Sniffer
 {
@@ -326,24 +327,11 @@ namespace VRise.Radar.Sniffer
                     */ // End of DISABLED code
                 }
             }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine($"[PacketError] ArgumentException in Protocol18:");
-                Console.WriteLine($"  Message: {ex.Message}");
-                Console.WriteLine($"  ParamName: {ex.ParamName}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"  InnerException: {ex.InnerException.Message}");
-                }
-                Console.WriteLine($"  StackTrace: {ex.StackTrace}");
-            }
+            // Catch EVERYTHING. This callback runs on the libpcap capture thread;
+            // any escaping exception terminates packet capture for the whole session.
             catch (Exception ex)
             {
-                Console.WriteLine($"[PacketError] {ex.GetType().Name}: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"  InnerException: {ex.InnerException.Message}");
-                }
+                ParseErrorLogger.Log("PacketDeviceSelector.OnPacketArrival", ex);
             }
         }
     }

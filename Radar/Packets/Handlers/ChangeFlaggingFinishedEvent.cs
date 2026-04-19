@@ -12,7 +12,7 @@ namespace VRise.Radar.Packets.Handlers
         public ChangeFlaggingFinishedEvent(Dictionary<byte, object> parameters): base(parameters)
         {
             Id = Convert.ToInt32(parameters[offsets[0]]);
-            Faction = (Faction)parameters[offsets[1]];
+            Faction = (Faction)Convert.ToByte(parameters[offsets[1]]);
         }
         
         public int Id { get; }

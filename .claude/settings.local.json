@@ -58,7 +58,9 @@
       "Read(//c//**)",
       "Bash(mkdir -p /c/temp/inspect)",
       "Read(//c/temp/**)",
-      "Bash(dotnet run *)"
+      "Bash(dotnet run *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

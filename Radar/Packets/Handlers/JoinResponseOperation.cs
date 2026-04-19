@@ -24,7 +24,7 @@ namespace VRise.Radar.Packets.Handlers
             // Location extraction with fallback logic (handles game updates)
             Location = ExtractLocationSafely(parameters, offsets[4]);
 
-            Faction = (Faction)parameters[offsets[5]];
+            Faction = (Faction)Convert.ToByte(parameters[offsets[5]]);
 
             // 安全的類型轉換，避免 InvalidCastException
             try
